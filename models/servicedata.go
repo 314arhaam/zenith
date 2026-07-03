@@ -23,17 +23,15 @@ func CreateServiceData() ServiceData {
 	return make(ServiceData)
 }
 
-func AddService(sl ServiceData, serviceName string) ServiceData {
+func (s *ServiceData) Add(serviceName string) {
 	data := NewService()
-	sl[serviceName] = data
-	return sl
+	(*s)[serviceName] = data
 }
 
-func RemoveService(sl ServiceData, serviceName string) ServiceData {
-	for k := range sl {
+func (s *ServiceData) Remove(serviceName string) {
+	for k := range *s {
 		if k == serviceName {
-			delete(sl, k)
+			delete(*s, k)
 		}
 	}
-	return sl
 }

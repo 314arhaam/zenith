@@ -27,6 +27,21 @@ func TestMarshal(t *testing.T) {
 	}
 }
 
+func TestAddService(t *testing.T) {
+	d := CreateServiceData()
+	d.Add("test-service-main")
+	if len(d) != 1 {
+		t.Fatal("Add method doesn't work")
+	}
+	d.Add("x")
+	d.Add("y")
+	log.Printf("Length: %d", len(d))
+	d.Remove("x")
+	if len(d) != 2 {
+		t.Fatal("Remove method doesn't work")
+	}
+}
+
 func TestBehave(t *testing.T) {
 	log.Println("*** REMOVE TEST ***")
 	d1 := make(ServiceData)
@@ -49,7 +64,7 @@ func TestBehave(t *testing.T) {
 		t.Error("Inital data are not equal")
 		t.Fail()
 	}
-	d1 = RemoveService(d1, "test-service-2")
+	d1.Remove("test-service-2")
 	d1m, _ = json.Marshal(d1)
 	if string(d1m) == string(d2m) {
 		t.Error("Removal failed")
