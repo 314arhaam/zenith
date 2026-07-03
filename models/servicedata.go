@@ -5,29 +5,31 @@ import (
 	"time"
 )
 
-type ServiceData struct {
+type Service struct {
 	ServiceID      uint64 `json:"service_id"`
 	CreateDateTime string `json:"create_datetime"`
 }
 
-func NewServiceData() ServiceData {
-	return ServiceData{
+type ServiceData map[string]Service
+
+func NewService() Service {
+	return Service{
 		ServiceID:      uint64(rand.Intn(1000)),
 		CreateDateTime: time.Now().Format(time.DateTime),
 	}
 }
 
-func CreateServiceList() map[string]ServiceData {
-	return make(map[string]ServiceData)
+func CreateServiceData() ServiceData {
+	return make(ServiceData)
 }
 
-func AddService(sl map[string]ServiceData, serviceName string) map[string]ServiceData {
-	data := NewServiceData()
+func AddService(sl ServiceData, serviceName string) ServiceData {
+	data := NewService()
 	sl[serviceName] = data
 	return sl
 }
 
-func RemoveService(sl map[string]ServiceData, serviceName string) map[string]ServiceData {
+func RemoveService(sl ServiceData, serviceName string) ServiceData {
 	for k := range sl {
 		if k == serviceName {
 			delete(sl, k)

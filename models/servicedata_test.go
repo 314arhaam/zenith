@@ -10,14 +10,14 @@ import (
 
 func TestCreate(t *testing.T) {
 	log.Println("*** CREATE TEST ***")
-	d := NewServiceData()
+	d := NewService()
 	jsonData, _ := json.Marshal(d)
 	log.Println(string(jsonData))
 }
 
 func TestMarshal(t *testing.T) {
 	log.Println("*** MARSHAL INDENT TEST ***")
-	d := NewServiceData()
+	d := NewService()
 	b, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		t.Error("Inital data are not equal")
@@ -29,16 +29,16 @@ func TestMarshal(t *testing.T) {
 
 func TestBehave(t *testing.T) {
 	log.Println("*** REMOVE TEST ***")
-	d1 := make(map[string]ServiceData)
-	d2 := make(map[string]ServiceData)
+	d1 := make(ServiceData)
+	d2 := make(ServiceData)
 	for i := 0; i < 3; i++ {
 		dt := time.Now().Format(time.DateTime)
 		name := "test-service-" + strconv.Itoa(i+1)
-		d1[name] = ServiceData{
+		d1[name] = Service{
 			ServiceID:      uint64(10 + i),
 			CreateDateTime: dt,
 		}
-		d2[name] = ServiceData{
+		d2[name] = Service{
 			ServiceID:      uint64(10 + i),
 			CreateDateTime: dt,
 		}
