@@ -3,14 +3,13 @@ package handlefuncs
 import (
 	"encoding/json"
 	"net/http"
-	data "zenith/models"
 )
 
-func Status(w http.ResponseWriter, r *http.Request, data *data.ServiceData) {
+func (h Handler) Status(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	}
-	jsonData, err := json.MarshalIndent(data, "", " ")
+	jsonData, err := json.MarshalIndent(h.Core, "", " ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
