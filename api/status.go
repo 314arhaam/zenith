@@ -7,6 +7,9 @@ import (
 )
 
 func Status(w http.ResponseWriter, r *http.Request, data *data.ServiceData) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	}
 	jsonData, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
