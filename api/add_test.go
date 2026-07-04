@@ -52,12 +52,12 @@ func TestAdd(t *testing.T) {
 	} else {
 		t.Logf("StatusCode: %d", w.Result().StatusCode)
 	}
-	_d, err := json.MarshalIndent(h.Core, "", " ")
+	_d, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
 	if err != nil {
 		t.Fatal("Error in marshal")
 	}
 	t.Logf("%v", string(_d))
-	res, ok := h.Core[serviceName]
+	res, ok := h.Core.Get(serviceName)
 	if !ok {
 		t.Fatal("Endpoint /add Failed.")
 	} else {
