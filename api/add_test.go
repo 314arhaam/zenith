@@ -10,6 +10,8 @@ import (
 )
 
 func TestAdd(t *testing.T) {
+	// title
+	log.Printf("*** ADD ENDPOINT ***")
 	// mock data
 	serviceName := "test_service-01"
 	url := "/add?service=" + serviceName
