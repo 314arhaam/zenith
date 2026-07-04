@@ -3,6 +3,7 @@ package handlefuncs
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +16,8 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 	if serviceName != "" {
 		val, ok := h.Core.Get(serviceName)
 		if !ok {
-			http.Error(w, "Service Not Found", http.StatusNotFound)
+			msg := strings.Join([]string{"Service Not Found: ", serviceName}, "")
+			http.Error(w, msg, http.StatusNotFound)
 			return
 		}
 		jsonData, err = json.MarshalIndent(val, "", " ")
