@@ -21,6 +21,7 @@ func TestAdd(t *testing.T) {
 		nil,
 	)
 	w := httptest.NewRecorder()
+	// handle function
 	Add(w, r, &d)
 	if w.Result().StatusCode != 201 {
 		t.Errorf("StatusCode not %d", w.Result().StatusCode)
