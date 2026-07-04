@@ -38,8 +38,5 @@ func TestRemove(t *testing.T) {
 		t.Fatal("Error in marshal")
 	}
 	log.Printf("%v", string(_d))
-	if err != nil {
-		t.Fatal("Error in marshal")
-	}
 	log.Printf("Data removed: `%s` = `%v`\n`%v`", serviceName, string(_d), *w)
 }
