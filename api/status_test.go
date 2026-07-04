@@ -12,7 +12,7 @@ func TestMethodNotAllowedStatus(t *testing.T) {
 	// mock data
 	url := "/status"
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	d.Add("mock_service")
 	w, r := responseAndRequestBuild(
 		http.MethodPost,
@@ -30,7 +30,7 @@ func TestStatus(t *testing.T) {
 	// mock data
 	url := "/status"
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	d.Add("mock_service")
 	w, r := responseAndRequestBuild(
 		http.MethodGet,

@@ -28,7 +28,7 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestAddService(t *testing.T) {
-	d := CreateServiceData()
+	d := NewServiceData()
 	d.Add("test-service-main")
 	if len(d) != 1 {
 		t.Fatal("Add method doesn't work")

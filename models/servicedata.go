@@ -19,7 +19,7 @@ func NewService() Service {
 	}
 }
 
-func CreateServiceData() ServiceData {
+func NewServiceData() ServiceData {
 	return make(ServiceData)
 }
 

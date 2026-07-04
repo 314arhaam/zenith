@@ -23,7 +23,7 @@ func TestMethodNotAllowedAdd(t *testing.T) {
 	serviceName := "test_service-01"
 	url := "/remove"
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	d.Add(serviceName)
 	w, r := responseAndRequestBuild(http.MethodGet, url, nil)
 	Add(w, r, &d)
@@ -37,7 +37,7 @@ func TestAdd(t *testing.T) {
 	serviceName := "test_service-01"
 	url := "/add?service=" + serviceName
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	w, r := responseAndRequestBuild(http.MethodPost, url, nil)
 	// handle function
 	Add(w, r, &d)

@@ -12,7 +12,7 @@ func TestMethodNotAllowedRemove(t *testing.T) {
 	serviceName := "test_service-01"
 	url := "/remove"
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	d.Add(serviceName)
 	d.Remove(serviceName)
 	w, r := responseAndRequestBuild(http.MethodGet, url, nil)
@@ -27,7 +27,7 @@ func TestRemove(t *testing.T) {
 	serviceName := "test_service-01"
 	url := "/remove?service=" + serviceName
 	// mock request and writer
-	d := data.CreateServiceData()
+	d := data.NewServiceData()
 	r := httptest.NewRequest(
 		http.MethodPost,
 		url,
