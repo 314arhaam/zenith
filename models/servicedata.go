@@ -1,7 +1,10 @@
 package data
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -10,7 +13,10 @@ type Service struct {
 	CreateDateTime string `json:"create_datetime"`
 }
 
-type ServiceData map[string]Service
+type ServiceData struct {
+	data map[string]Service
+	mu   sync.Mutex
+}
 
 func NewService() Service {
 	return Service{
@@ -20,18 +26,50 @@ func NewService() Service {
 }
 
 func NewServiceData() ServiceData {
-	return make(ServiceData)
+	return ServiceData{data: make(map[string]Service)}
+}
+
+func (s *ServiceData) Get(key string) (Service, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	val, ok := s.data[key]
+	return val, ok
+}
+
+func (s *ServiceData) Set(key string, val Service) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.data[key] = val
+	return
 }
 
 func (s *ServiceData) Add(serviceName string) {
 	data := NewService()
-	(*s)[serviceName] = data
+	s.Set(serviceName, data)
+}
+
+func (s *ServiceData) Len() int {
+	return len(s.data)
+}
+
+func (s *ServiceData) Marshal() (string, error) {
+	dm, err := json.Marshal(s.data)
+	if err != nil {
+		return "", fmt.Errorf("Error in Marshal `ServiceData` instance")
+	}
+	return string(dm), nil
+}
+
+func (s *ServiceData) GetAll() map[string]Service {
+	return s.data
 }
 
 func (s *ServiceData) Remove(serviceName string) {
-	for k := range *s {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for k := range s.data {
 		if k == serviceName {
-			delete(*s, k)
+			delete(s.data, k)
 		}
 	}
 }
