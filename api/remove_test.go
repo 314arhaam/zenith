@@ -35,7 +35,7 @@ func TestRemove(t *testing.T) {
 		t.Fatal("Error in request payload marshall")
 	}
 	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
-	_d_, err := json.MarshalIndent(h.Core, "", " ")
+	_d_, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
 	t.Logf("ServiceData: %v", string(_d_))
 	// handle function
 	h.Remove(w, r)
@@ -44,7 +44,7 @@ func TestRemove(t *testing.T) {
 	} else {
 		t.Logf("StatusCode: %d", w.Result().StatusCode)
 	}
-	_d, err := json.MarshalIndent(h.Core, "", " ")
+	_d, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
 	if err != nil {
 		t.Fatal("Error in marshal")
 	}
