@@ -40,7 +40,6 @@ func (s *ServiceData) Set(key string, val Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[key] = val
-	return
 }
 
 func (s *ServiceData) Add(serviceName string) {
