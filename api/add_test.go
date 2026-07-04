@@ -22,6 +22,11 @@ func TestAdd(t *testing.T) {
 	)
 	w := httptest.NewRecorder()
 	Add(w, r, &d)
+	if w.Result().StatusCode != 201 {
+		t.Errorf("StatusCode not %d", w.Result().StatusCode)
+	} else {
+		log.Printf("StatusCode: %d", w.Result().StatusCode)
+	}
 	_d, err := json.MarshalIndent(d, "", " ")
 	if err != nil {
 		t.Fatal("Error in marshal")
@@ -35,6 +40,6 @@ func TestAdd(t *testing.T) {
 		if err != nil {
 			t.Fatal("Error in marshal")
 		}
-		log.Printf("Data added: `%s` = `%v`", serviceName, string(_res))
+		log.Printf("Data added: `%s` = `%v`\n`%v`", serviceName, string(_res), *w)
 	}
 }
