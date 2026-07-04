@@ -3,8 +3,9 @@ package handlefuncs
 import (
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
+	"strings"
 	"testing"
+	data "zenith/models"
 )
 
 func TestMethodNotAllowedRemove(t *testing.T) {
@@ -26,18 +27,16 @@ func TestRemove(t *testing.T) {
 	h := NewHandler()
 	// mock data
 	serviceName := "test_service-01"
-	url := "/remove?service=" + serviceName
+	url := "/remove"
 	// mock request and writer
 	h.Core.Add(serviceName)
-	r := httptest.NewRequest(
-		http.MethodPost,
-		url,
-		nil,
-	)
-	h.Core.Add(serviceName)
+	payload, err := json.Marshal(data.RequestPayload{ServiceName: serviceName})
+	if err != nil {
+		t.Fatal("Error in request payload marshall")
+	}
+	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
 	_d_, err := json.MarshalIndent(h.Core, "", " ")
 	t.Logf("ServiceData: %v", string(_d_))
-	w := httptest.NewRecorder()
 	// handle function
 	h.Remove(w, r)
 	if w.Result().StatusCode != 201 {

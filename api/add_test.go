@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	data "zenith/models"
 )
 
 func responseAndRequestBuild(method string, url string, body io.Reader) (*httptest.ResponseRecorder, *http.Request) {
@@ -21,7 +23,7 @@ func responseAndRequestBuild(method string, url string, body io.Reader) (*httpte
 func TestMethodNotAllowedAdd(t *testing.T) {
 	h := NewHandler()
 	serviceName := "test_service-01"
-	url := "/remove"
+	url := "/add"
 	// mock request and writer
 	h.Core.Add(serviceName)
 	w, r := responseAndRequestBuild(http.MethodGet, url, nil)
@@ -35,10 +37,14 @@ func TestAdd(t *testing.T) {
 	h := NewHandler()
 	// mock data
 	serviceName := "test_service-01"
-	url := "/add?service=" + serviceName
+	url := "/add"
 	// mock request and writer
 	h.Core.Add(serviceName)
-	w, r := responseAndRequestBuild(http.MethodPost, url, nil)
+	payload, err := json.Marshal(data.RequestPayload{ServiceName: serviceName})
+	if err != nil {
+		t.Fatal("Error in request payload marshall")
+	}
+	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
 	// handle function
 	h.Add(w, r)
 	if w.Result().StatusCode != 201 {
