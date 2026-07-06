@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"zenith/core"
 	data "zenith/models"
 )
 
@@ -58,27 +59,22 @@ func TestAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error in request payload marshall")
 	}
-	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
+	payloadString := string(payload)
+	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(payloadString))
 	// handle function
 	h.Add(w, r)
-	if w.Result().StatusCode != 201 {
-		t.Errorf("StatusCode not %d", w.Result().StatusCode)
-	} else {
-		t.Logf("StatusCode: %d", w.Result().StatusCode)
+	if w.Result().StatusCode != http.StatusCreated {
+		t.Fatalf("Error: `TestEmptyFetch` failed. StatusCode %d", w.Result().StatusCode)
 	}
-	_d, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
-	if err != nil {
-		t.Fatal("Error in marshal")
-	}
-	t.Logf("%v", string(_d))
-	res, ok := h.Core.Get(serviceName)
-	if !ok {
-		t.Fatal("Endpoint /add Failed.")
+	defer w.Result().Body.Close()
+	if d, err := io.ReadAll(w.Result().Body); err != nil {
+		t.Fatalf("Error: `TestEmptyFetch` failed. Cannot fetch data. Error: %v", err)
 	} else {
-		_res, err := json.MarshalIndent(res, "", " ")
-		if err != nil {
-			t.Fatal("Error in marshal")
+		var fetchData core.Service
+		if err := json.Unmarshal([]byte(strings.ReplaceAll(string(d), "\n", "")), &fetchData); err != nil {
+			t.Fatalf("Error in fetch data validation: %s", err)
+		} else {
+			t.Logf("Result of POST to /add: %v", string(d))
 		}
-		t.Logf("Data added: `%s` = `%v`\n`%v`", serviceName, string(_res), *w)
 	}
 }
