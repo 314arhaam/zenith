@@ -33,8 +33,10 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	val, ok := h.Core.Get(rs.ServiceName)
 	if !ok {
 		http.Error(w, "Error in data check", http.StatusInternalServerError)
+		return
 	}
 	if err := json.NewEncoder(w).Encode(val); err != nil {
 		http.Error(w, "Error in encoding", http.StatusInternalServerError)
+		return
 	}
 }
