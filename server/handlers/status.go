@@ -23,11 +23,13 @@ func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(val); err != nil {
 			http.Error(w, "Error in encoding", http.StatusInternalServerError)
+			return
 		}
 	} else {
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(h.Core.GetAll()); err != nil {
 			http.Error(w, "Error in encoding", http.StatusInternalServerError)
+			return
 		}
 	}
 }
