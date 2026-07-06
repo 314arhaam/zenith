@@ -21,7 +21,10 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Data Provided", http.StatusBadRequest)
 		return
 	}
-	h.Core.Remove(rs.ServiceName)
+	if ok := h.Core.Remove(rs.ServiceName); !ok {
+		http.Error(w, "Element not found", http.StatusNotFound)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 }
