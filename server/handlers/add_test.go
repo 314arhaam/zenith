@@ -21,6 +21,7 @@ func responseAndRequestBuild(method string, url string, body io.Reader) (*httpte
 }
 
 func TestMethodNotAllowedAdd(t *testing.T) {
+	// intentionally requets GET method on /add
 	h := NewHandler()
 	serviceName := "test_service-01"
 	url := "/add"
@@ -28,8 +29,21 @@ func TestMethodNotAllowedAdd(t *testing.T) {
 	h.Core.Add(serviceName)
 	w, r := responseAndRequestBuild(http.MethodGet, url, nil)
 	h.Add(w, r)
-	if w.Result().StatusCode != 405 {
-		t.Fatalf("Error: `Method Not Allowed` doesn't work.")
+	if w.Result().StatusCode != http.StatusMethodNotAllowed {
+		t.Fatalf("Error: `TestMethodNotAllowedAdd` failed. StatusCode %d", w.Result().StatusCode)
+	}
+}
+
+func TestEmptyFetch(t *testing.T) {
+	// invalid payload is pased to /add
+	h := NewHandler()
+	invalidPayload := strings.NewReader(`{"key": "val"}`)
+	url := "/add"
+	// mock request and writer
+	w, r := responseAndRequestBuild(http.MethodPost, url, invalidPayload)
+	h.Add(w, r)
+	if w.Result().StatusCode != http.StatusBadRequest {
+		t.Fatalf("Error: `TestEmptyFetch` failed. StatusCode %d", w.Result().StatusCode)
 	}
 }
 
