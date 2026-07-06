@@ -23,6 +23,25 @@ func TestMethodNotAllowedRemove(t *testing.T) {
 	}
 }
 
+func TestRemove404(t *testing.T) {
+	h := NewHandler()
+	// mock data
+	serviceNameNotFound := "test_service-02"
+	url := "/remove"
+	// mock request and writer
+	payload, err := json.Marshal(data.RequestPayload{ServiceName: serviceNameNotFound})
+	if err != nil {
+		t.Fatal("Error in request payload marshall")
+	}
+	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
+	// handle function
+	h.Remove(w, r)
+	if w.Result().StatusCode != 404 {
+		t.Fatalf("StatusCode not 404: %d", w.Result().StatusCode)
+	}
+	t.Logf("StatusCode: %d", w.Result().StatusCode)
+}
+
 func TestRemove(t *testing.T) {
 	h := NewHandler()
 	// mock data
@@ -35,7 +54,7 @@ func TestRemove(t *testing.T) {
 		t.Fatal("Error in request payload marshall")
 	}
 	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
-	_d_, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
+	_d_, err := json.Marshal(h.Core.GetAll())
 	t.Logf("ServiceData: %v", string(_d_))
 	// handle function
 	h.Remove(w, r)
@@ -44,7 +63,7 @@ func TestRemove(t *testing.T) {
 	} else {
 		t.Logf("StatusCode: %d", w.Result().StatusCode)
 	}
-	_d, err := json.MarshalIndent(h.Core.GetAll(), "", " ")
+	_d, err := json.Marshal(h.Core.GetAll())
 	if err != nil {
 		t.Fatal("Error in marshal")
 	}
