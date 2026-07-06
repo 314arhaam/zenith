@@ -30,4 +30,11 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	h.Core.Add(rs.ServiceName)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	val, ok := h.Core.Get(rs.ServiceName)
+	if !ok {
+		http.Error(w, "Error in data check", http.StatusInternalServerError)
+	}
+	if err := json.NewEncoder(w).Encode(val); err != nil {
+		http.Error(w, "Error in encoding", http.StatusInternalServerError)
+	}
 }
