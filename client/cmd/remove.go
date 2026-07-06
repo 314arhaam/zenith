@@ -1,11 +1,16 @@
 /*
 Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
+	data "zenith/models"
 
 	"github.com/spf13/cobra"
 )
@@ -14,14 +19,36 @@ import (
 var removeCmd = &cobra.Command{
 	Use:   "remove",
 	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("remove called")
+	Long:  ``,
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		endpoint := strings.Join([]string{baseURL, "remove"}, "/")
+		serviceName := args[0]
+		//
+		req := data.RequestPayload{ServiceName: serviceName}
+		body, err := json.Marshal(req)
+		if err != nil {
+			log.Fatalf("Error marshaling request payload: %v", err)
+			return fmt.Errorf("error marshaling request payload: %v", err)
+		}
+		//
+		resp, err := http.Post(
+			endpoint,
+			"application/json",
+			bytes.NewBuffer(body),
+		)
+		if err != nil {
+			log.Fatalf("Error making POST request: %v, payload: %s", err, body)
+			return fmt.Errorf("error making POST request: %v", err)
+		}
+		defer resp.Body.Close()
+		//
+		if resp.StatusCode != http.StatusCreated {
+			log.Fatalf("received status code %d", resp.StatusCode)
+			return fmt.Errorf("received status code %d", resp.StatusCode)
+		}
+		fmt.Printf("Status Code: %d", resp.StatusCode)
+		return nil
 	},
 }
 
