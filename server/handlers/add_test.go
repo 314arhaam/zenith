@@ -73,8 +73,10 @@ func TestAdd(t *testing.T) {
 		var fetchData core.Service
 		if err := json.Unmarshal([]byte(strings.ReplaceAll(string(d), "\n", "")), &fetchData); err != nil {
 			t.Fatalf("Error in fetch data validation: %s", err)
-		} else {
-			t.Logf("Result of POST to /add: %v", string(d))
 		}
+		if fetchData.CreateDateTime == "" {
+			t.Fatal("Error in system core: Service data generated is empty")
+		}
+		t.Logf("Result: %v %s", fetchData, string(d))
 	}
 }
