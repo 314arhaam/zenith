@@ -63,12 +63,16 @@ func (s *ServiceData) GetAll() map[string]Service {
 	return s.data
 }
 
-func (s *ServiceData) Remove(serviceName string) {
+func (s *ServiceData) Remove(serviceName string) bool {
+	if _, ok := s.Get(serviceName); !ok {
+		return false
+	}
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	for k := range s.data {
 		if k == serviceName {
 			delete(s.data, k)
 		}
 	}
+	s.mu.Unlock()
+	return true
 }
