@@ -1,27 +1,30 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	data "zenith/models"
 )
 
+func (h *Handler) remove(serviceName string) bool {
+	return h.Core.Remove(serviceName)
+}
+
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Use POST method", http.StatusMethodNotAllowed)
 		return
 	}
 	defer r.Body.Close()
-	var rs data.RequestPayload
-	if err := json.NewDecoder(r.Body).Decode(&rs); err != nil {
-		http.Error(w, "Error in request decode "+err.Error(), http.StatusInternalServerError)
+	var rs data.RemoveRequest
+	if err := data.Decode(&rs, r.Body); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if rs.ServiceName == "" {
-		http.Error(w, "Not Data Provided", http.StatusBadRequest)
+	if ok := rs.Validate(); !ok {
+		http.Error(w, "No Data Provided", http.StatusBadRequest)
 		return
 	}
-	if ok := h.Core.Remove(rs.ServiceName); !ok {
+	if ok := h.remove(rs.ServiceName); !ok {
 		http.Error(w, "Element not found", http.StatusNotFound)
 		return
 	}
