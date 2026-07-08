@@ -7,7 +7,7 @@ import (
 
 func TestServiceData(t *testing.T) {
 	testKey := "test"
-	sd := NewServiceData()
+	sd := NewSystem()
 	// Add
 	sd.Add(testKey)
 	t.Logf("[*] Data added: %s", testKey)
@@ -41,13 +41,10 @@ func TestServiceData(t *testing.T) {
 	}
 	// GetAll
 	curTime := time.Now().Format(time.DateTime)
-	mockService := Service{
-		ServiceID:      1,
-		CreateDateTime: curTime,
-	}
-	data1 := NewServiceData()
+	mockService := NewCustomService(1, curTime)
+	data1 := NewSystem()
 	data1.Set("test-02", mockService)
-	data2 := make(map[string]Service)
+	data2 := make(map[string]service)
 	data2["test-02"] = mockService
 	if data1.GetAll()["test-02"] != data2["test-02"] {
 		t.Fatal("GetAll method on ServiceData failed")

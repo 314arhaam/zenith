@@ -3,11 +3,11 @@ package handlers
 import "zenith/core"
 
 type Handler struct {
-	Core core.ServiceData
+	Core core.System
 }
 
 func NewHandler() Handler {
 	return Handler{
-		Core: core.NewServiceData(),
+		Core: core.NewSystem(),
 	}
 }
