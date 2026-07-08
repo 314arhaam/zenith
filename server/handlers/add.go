@@ -3,34 +3,38 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"zenith/core"
 	data "zenith/models"
 )
+
+func (h *Handler) add(serviceName string) (core.Service, bool) {
+	h.Core.Add(serviceName)
+	val, ok := h.Core.Get(serviceName)
+	return val, ok
+}
 
 func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	// check if method ok
 	// Post -> ok
 	// other -> http.StatusMethodNotAllowed -> return
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Use POST method", http.StatusMethodNotAllowed)
 		return
 	}
 	// read request data
 	defer r.Body.Close()
-	var rs data.RequestPayload
-	if err := json.NewDecoder(r.Body).Decode(&rs); err != nil {
-		http.Error(w, "Error in request decode "+err.Error(), http.StatusInternalServerError)
+	var rs data.AddRequest
+	if err := data.Decode(&rs, r.Body); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// validate request, check if it has the key
-	if rs.ServiceName == "" {
-		http.Error(w, "Not Data Provided", http.StatusBadRequest)
+	if ok := rs.Validate(); !ok {
+		http.Error(w, "Invalid payload", http.StatusBadRequest)
 		return
 	}
 	// core logic
-	h.Core.Add(rs.ServiceName)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	val, ok := h.Core.Get(rs.ServiceName)
+	val, ok := h.add(rs.ServiceName)
 	if !ok {
 		http.Error(w, "Error in data check", http.StatusInternalServerError)
 		return
@@ -39,4 +43,6 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error in encoding", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 }
