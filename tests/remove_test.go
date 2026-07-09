@@ -30,7 +30,7 @@ func TestRemove404(t *testing.T) {
 	serviceNameNotFound := "test_service-02"
 	url := "/remove"
 	// mock request and writer
-	payload, err := json.Marshal(data.RequestPayload{ServiceName: serviceNameNotFound})
+	payload, err := json.Marshal(data.RemoveRequest{ServiceName: serviceNameNotFound})
 	if err != nil {
 		t.Fatal("Error in request payload marshall")
 	}
@@ -50,7 +50,7 @@ func TestRemove(t *testing.T) {
 	url := "/remove"
 	// mock request and writer
 	h.Core.Add(serviceName)
-	payload, err := json.Marshal(data.RequestPayload{ServiceName: serviceName})
+	payload, err := json.Marshal(data.RemoveRequest{ServiceName: serviceName})
 	if err != nil {
 		t.Fatal("Error in request payload marshall")
 	}

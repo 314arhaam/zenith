@@ -25,7 +25,7 @@ var addCmd = &cobra.Command{
 		endpoint := strings.Join([]string{baseURL, "add"}, "/")
 		serviceName := args[0]
 		//
-		req := data.RequestPayload{ServiceName: serviceName}
+		req := data.AddRequest{ServiceName: serviceName}
 		body, err := json.Marshal(req)
 		if err != nil {
 			log.Fatalf("Error marshaling request payload: %v", err)
