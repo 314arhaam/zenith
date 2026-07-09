@@ -13,45 +13,41 @@ import (
 )
 
 // statusCmd represents the status command
-func NewStatusCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "status",
-		Short: "A brief description of your command",
-		Long:  ``,
-		Args:  cobra.ArbitraryArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			endpoint := strings.Join([]string{baseURL, "status"}, "/")
-			if len(args) == 1 {
-				endpoint = endpoint + "?service=" + args[0]
-			} else if len(args) > 1 {
-				return fmt.Errorf("Too many args")
-			}
-			// log.Printf("[*] Calling endpoint %s", endpoint)
-			request, err := http.NewRequest(
-				http.MethodGet,
-				endpoint,
-				nil,
-			)
-			if err != nil {
-				return fmt.Errorf("Error in Request create %v", err)
-			}
-			request.Header["Content-Type"] = []string{"application/json"}
-			resp, err := http.DefaultClient.Do(request)
-			if err != nil {
-				return fmt.Errorf("Error in GET %s: %v", endpoint, err)
-			}
-			defer resp.Body.Close()
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return fmt.Errorf("Error in response parsing %v", err)
-			}
-			fmt.Printf("%v", string(body))
-			return nil
-		},
-	}
+var statusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "A brief description of your command",
+	Long:  ``,
+	Args:  cobra.ArbitraryArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		endpoint := strings.Join([]string{baseURL, "status"}, "/")
+		if len(args) == 1 {
+			endpoint = endpoint + "?service=" + args[0]
+		} else if len(args) > 1 {
+			return fmt.Errorf("Too many args")
+		}
+		// log.Printf("[*] Calling endpoint %s", endpoint)
+		request, err := http.NewRequest(
+			http.MethodGet,
+			endpoint,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("Error in Request create %v", err)
+		}
+		request.Header["Content-Type"] = []string{"application/json"}
+		resp, err := http.DefaultClient.Do(request)
+		if err != nil {
+			return fmt.Errorf("Error in GET %s: %v", endpoint, err)
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("Error in response parsing %v", err)
+		}
+		fmt.Printf("%v", string(body))
+		return nil
+	},
 }
-
-var statusCmd = NewStatusCmd()
 
 func init() {
 	rootCmd.AddCommand(statusCmd)
