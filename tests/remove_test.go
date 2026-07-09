@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 	data "zenith/models"
+	hd "zenith/server/handlers"
 )
 
 func TestMethodNotAllowedRemove(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	serviceName := "test_service-01"
 	url := "/remove"
 	// mock request and writer
@@ -24,7 +25,7 @@ func TestMethodNotAllowedRemove(t *testing.T) {
 }
 
 func TestRemove404(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	serviceNameNotFound := "test_service-02"
 	url := "/remove"
@@ -43,7 +44,7 @@ func TestRemove404(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	serviceName := "test_service-01"
 	url := "/remove"

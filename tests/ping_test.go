@@ -4,10 +4,11 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	hd "zenith/server/handlers"
 )
 
 func TestPing(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	w, r := responseAndRequestBuild(
 		http.MethodGet,
 		"/ping",

@@ -4,26 +4,16 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 	"zenith/core"
 	data "zenith/models"
+	hd "zenith/server/handlers"
 )
-
-func responseAndRequestBuild(method string, url string, body io.Reader) (*httptest.ResponseRecorder, *http.Request) {
-	r := httptest.NewRequest(
-		method,
-		url,
-		body,
-	)
-	w := httptest.NewRecorder()
-	return w, r
-}
 
 func TestMethodNotAllowedAdd(t *testing.T) {
 	// intentionally requets GET method on /add
-	h := NewHandler()
+	h := hd.NewHandler()
 	serviceName := "test_service-01"
 	url := "/add"
 	// mock request and writer
@@ -37,7 +27,7 @@ func TestMethodNotAllowedAdd(t *testing.T) {
 
 func TestEmptyFetch(t *testing.T) {
 	// invalid payload is pased to /add
-	h := NewHandler()
+	h := hd.NewHandler()
 	invalidPayload := strings.NewReader(`{"key": "val"}`)
 	url := "/add"
 	// mock request and writer
@@ -49,7 +39,7 @@ func TestEmptyFetch(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	serviceName := "test_service-01"
 	url := "/add"
