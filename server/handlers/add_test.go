@@ -64,11 +64,11 @@ func TestAdd(t *testing.T) {
 	// handle function
 	h.Add(w, r)
 	if w.Result().StatusCode != http.StatusCreated {
-		t.Errorf("Error: `` failed. StatusCode %d", w.Result().StatusCode)
+		t.Fatalf("Error: fetch result failed. StatusCode %d", w.Result().StatusCode)
 	}
 	defer w.Result().Body.Close()
 	if d, err := io.ReadAll(w.Result().Body); err != nil {
-		t.Fatalf("Error: `` failed. Cannot fetch data. Error: %v", err)
+		t.Fatalf("Error: read fetch data failed: %v", err)
 	} else {
 		var fetchData core.Service
 		if err := json.Unmarshal([]byte(strings.ReplaceAll(string(d), "\n", "")), &fetchData); err != nil {
