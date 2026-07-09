@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  server_tests:
+  runs-on:
+  steps:
+  - name: Unit tests
+
+  server_build:
+  runs-on:
+  steps:
+
+  server_e2e:
+  runs-on:
+  steps:
+
+  client_tests:
+  runs-on:
+  steps:
+
+  client_build:
+  runs-on:
+  steps:

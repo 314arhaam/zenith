@@ -1,4 +1,4 @@
-package data
+package core
 
 import (
 	"encoding/json"
@@ -13,9 +13,16 @@ type Service struct {
 	CreateDateTime string `json:"create_datetime"`
 }
 
-type ServiceData struct {
+type System struct {
 	data map[string]Service
 	mu   sync.Mutex
+}
+
+func NewCustomService(serviceId uint64, dt string) Service {
+	return Service{
+		ServiceID:      serviceId,
+		CreateDateTime: dt,
+	}
 }
 
 func NewService() Service {
@@ -25,50 +32,54 @@ func NewService() Service {
 	}
 }
 
-func NewServiceData() ServiceData {
-	return ServiceData{data: make(map[string]Service)}
+func NewSystem() System {
+	return System{data: make(map[string]Service)}
 }
 
-func (s *ServiceData) Get(key string) (Service, bool) {
+func (s *System) Get(key string) (Service, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	val, ok := s.data[key]
 	return val, ok
 }
 
-func (s *ServiceData) Set(key string, val Service) {
+func (s *System) Set(key string, val Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[key] = val
 }
 
-func (s *ServiceData) Add(serviceName string) {
+func (s *System) Add(serviceName string) {
 	data := NewService()
 	s.Set(serviceName, data)
 }
 
-func (s *ServiceData) Len() int {
+func (s *System) Len() int {
 	return len(s.data)
 }
 
-func (s *ServiceData) Marshal() (string, error) {
+func (s *System) Marshal() (string, error) {
 	dm, err := json.Marshal(s.data)
 	if err != nil {
-		return "", fmt.Errorf("Error in Marshal `ServiceData` instance")
+		return "", fmt.Errorf("Error in Marshal `System` instance")
 	}
 	return string(dm), nil
 }
 
-func (s *ServiceData) GetAll() map[string]Service {
+func (s *System) GetAll() map[string]Service {
 	return s.data
 }
 
-func (s *ServiceData) Remove(serviceName string) {
+func (s *System) Remove(serviceName string) bool {
+	if _, ok := s.Get(serviceName); !ok {
+		return false
+	}
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	for k := range s.data {
 		if k == serviceName {
 			delete(s.data, k)
 		}
 	}
+	s.mu.Unlock()
+	return true
 }

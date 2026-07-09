@@ -1,0 +1,46 @@
+name: Operational Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+  runs-on:
+  steps:
+    - name: Checkout
+    - name: Build server
+    - name: Build client
+    - name: Upload binaies
+
+  run_server:
+  runs-on:
+  steps:
+    - name: Download server binary
+    - name: Setup tailscale
+    - name: Run server
+
+  verify_server:
+  runs-on:
+  steps:
+    - name: Download client binary
+    - name: Setup tailscale
+    - name: Ping server in a loop
+
+  run_client:
+  runs-on:
+  depends-on: [verify_server]
+  steps:
+    - name: Download client binary
+    - name: Setup tailscale
+    - name: Add service
+    - name: Check service
+
+  service_shutdown:
+  runs-on:
+  depends-on: [verify_server]
+  steps:
+    - name: Download client binary
+    - name: Setup tailscale
+    - name: Check service
+    - name: Simulate load
+    - name: Remove service

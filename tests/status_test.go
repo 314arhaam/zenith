@@ -1,14 +1,15 @@
-package handlefuncs
+package tests
 
 import (
 	"io"
 	"log"
 	"net/http"
 	"testing"
+	hd "zenith/server/handlers"
 )
 
 func TestMethodNotAllowedStatus(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	url := "/status"
 	// mock request and writer
@@ -26,7 +27,7 @@ func TestMethodNotAllowedStatus(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	url := "/status"
 	// mock request and writer
@@ -47,7 +48,7 @@ func TestStatus(t *testing.T) {
 }
 
 func TestStatusSignleService(t *testing.T) {
-	h := NewHandler()
+	h := hd.NewHandler()
 	// mock data
 	serviceName := "mock_single_service"
 	url := "/status?service=" + serviceName
