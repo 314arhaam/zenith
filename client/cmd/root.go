@@ -12,19 +12,18 @@ import (
 var baseURL string
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "client",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+func NewRootCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "client",
+		Short: "A brief description of your application",
+		Long:  ``,
+		// Uncomment the following line if your bare application
+		// has an action associated with it:
+		// Run: func(cmd *cobra.Command, args []string) { },
+	}
 }
+
+var rootCmd = NewRootCmd()
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -48,7 +47,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(
 		&baseURL,
 		"url",
-		"http://0.0.0.0:8080",
+		"",
 		"Base URL for API",
 	)
 }

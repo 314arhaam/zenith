@@ -15,71 +15,75 @@ import (
 )
 
 // checkCmd represents the check command
-var checkCmd = &cobra.Command{
-	Use:   "check",
-	Short: "A brief description of your command",
-	Long:  ``,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint := strings.Join([]string{baseURL, "status"}, "/")
-		if len(args) == 1 {
-			endpoint = endpoint + "?service=" + args[0]
-		} else if len(args) > 1 {
-			return fmt.Errorf("Too many args")
-		}
-		retry := 0
-		maxRetry, err := cmd.Flags().GetInt("max-retry")
-		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
-		}
-		dt, err := cmd.Flags().GetInt("interval")
-		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
-		}
-		sleepDt, err := cmd.Flags().GetInt("sleep")
-		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
-		}
-		step := 0
-		for {
-			if retry >= maxRetry {
-				log.Printf("[*] Max retry reached, shutdown")
+func NewCheckCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "check",
+		Short: "A brief description of your command",
+		Long:  ``,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			endpoint := strings.Join([]string{baseURL, "status"}, "/")
+			if len(args) == 1 {
+				endpoint = endpoint + "?service=" + args[0]
+			} else if len(args) > 1 {
+				return fmt.Errorf("Too many args")
+			}
+			retry := 0
+			maxRetry, err := cmd.Flags().GetInt("max-retry")
+			if err != nil {
+				log.Fatalf("Error in flag: %v", err)
 				return nil
 			}
-			request, err := http.NewRequest(
-				http.MethodGet,
-				endpoint,
-				nil,
-			)
+			dt, err := cmd.Flags().GetInt("interval")
 			if err != nil {
-				return fmt.Errorf("Error in Request create %v", err)
+				log.Fatalf("Error in flag: %v", err)
+				return nil
 			}
-			request.Header["Content-Type"] = []string{"application/json"}
-			resp, err := http.DefaultClient.Do(request)
+			sleepDt, err := cmd.Flags().GetInt("sleep")
 			if err != nil {
-				return fmt.Errorf("Error in GET %s: %v", endpoint, err)
+				log.Fatalf("Error in flag: %v", err)
+				return nil
 			}
-			defer resp.Body.Close()
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return fmt.Errorf("Error in response parsing %v", err)
+			step := 0
+			for {
+				if retry >= maxRetry {
+					log.Printf("[*] Max retry reached, shutdown")
+					return nil
+				}
+				request, err := http.NewRequest(
+					http.MethodGet,
+					endpoint,
+					nil,
+				)
+				if err != nil {
+					return fmt.Errorf("Error in Request create %v", err)
+				}
+				request.Header["Content-Type"] = []string{"application/json"}
+				resp, err := http.DefaultClient.Do(request)
+				if err != nil {
+					return fmt.Errorf("Error in GET %s: %v", endpoint, err)
+				}
+				defer resp.Body.Close()
+				body, err := io.ReadAll(resp.Body)
+				if err != nil {
+					return fmt.Errorf("Error in response parsing %v", err)
+				}
+				f := string(body)
+				if f == "{}\n" {
+					retry += 1
+					fmt.Printf("[*] No data available. Retry %d out of %d\n", retry, maxRetry)
+					time.Sleep(time.Duration(dt) * time.Second)
+				} else {
+					retry = 0
+					fmt.Printf("[*] Step %d \n\tData: %v", step, string(body))
+					step += 1
+					time.Sleep(time.Duration(sleepDt) * time.Second)
+				}
 			}
-			f := string(body)
-			if f == "{}\n" {
-				retry += 1
-				fmt.Printf("[*] No data available. Retry %d out of %d\n", retry, maxRetry)
-				time.Sleep(time.Duration(dt) * time.Second)
-			} else {
-				retry = 0
-				fmt.Printf("[*] Step %d \n\tData: %v", step, string(body))
-				step += 1
-				time.Sleep(time.Duration(sleepDt) * time.Second)
-			}
-		}
-	},
+		},
+	}
 }
+
+var checkCmd = NewCheckCmd()
 
 func init() {
 	rootCmd.AddCommand(checkCmd)

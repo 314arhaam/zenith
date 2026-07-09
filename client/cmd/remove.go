@@ -16,41 +16,45 @@ import (
 )
 
 // removeCmd represents the remove command
-var removeCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "A brief description of your command",
-	Long:  ``,
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint := strings.Join([]string{baseURL, "remove"}, "/")
-		serviceName := args[0]
-		//
-		req := data.RemoveRequest{ServiceName: serviceName}
-		body, err := json.Marshal(req)
-		if err != nil {
-			log.Fatalf("Error marshaling request payload: %v", err)
-			return fmt.Errorf("error marshaling request payload: %v", err)
-		}
-		//
-		resp, err := http.Post(
-			endpoint,
-			"application/json",
-			bytes.NewBuffer(body),
-		)
-		if err != nil {
-			log.Fatalf("Error making POST request: %v, payload: %s", err, body)
-			return fmt.Errorf("error making POST request: %v", err)
-		}
-		defer resp.Body.Close()
-		//
-		if resp.StatusCode != http.StatusCreated {
-			log.Fatalf("received status code %d", resp.StatusCode)
-			return fmt.Errorf("received status code %d", resp.StatusCode)
-		}
-		fmt.Printf("Status Code: %d", resp.StatusCode)
-		return nil
-	},
+func NewRemoveCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "remove",
+		Short: "A brief description of your command",
+		Long:  ``,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			endpoint := strings.Join([]string{baseURL, "remove"}, "/")
+			serviceName := args[0]
+			//
+			req := data.RemoveRequest{ServiceName: serviceName}
+			body, err := json.Marshal(req)
+			if err != nil {
+				log.Fatalf("Error marshaling request payload: %v", err)
+				return fmt.Errorf("error marshaling request payload: %v", err)
+			}
+			//
+			resp, err := http.Post(
+				endpoint,
+				"application/json",
+				bytes.NewBuffer(body),
+			)
+			if err != nil {
+				log.Fatalf("Error making POST request: %v, payload: %s", err, body)
+				return fmt.Errorf("error making POST request: %v", err)
+			}
+			defer resp.Body.Close()
+			//
+			if resp.StatusCode != http.StatusCreated {
+				log.Fatalf("received status code %d", resp.StatusCode)
+				return fmt.Errorf("received status code %d", resp.StatusCode)
+			}
+			fmt.Printf("Status Code: %d", resp.StatusCode)
+			return nil
+		},
+	}
 }
+
+var removeCmd = NewRemoveCmd()
 
 func init() {
 	rootCmd.AddCommand(removeCmd)

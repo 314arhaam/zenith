@@ -14,35 +14,39 @@ import (
 )
 
 // pingCmd represents the ping command
-var pingCmd = &cobra.Command{
-	Use:   "ping",
-	Short: "A brief description of your command",
-	Long:  ``,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint := strings.Join([]string{baseURL, "ping"}, "/")
-		//
-		resp, err := http.Get(
-			endpoint,
-		)
-		if err != nil {
-			log.Fatalf("Error making GET /ping: %v", err)
-			return fmt.Errorf("error making GET /ping: %v", err)
-		}
-		defer resp.Body.Close()
-		//
-		if resp.StatusCode != http.StatusOK {
-			log.Fatalf("received status code %d", resp.StatusCode)
-			return fmt.Errorf("received status code %d", resp.StatusCode)
-		}
-		if val, err := io.ReadAll(resp.Body); err != nil {
-			log.Fatalf("response error: %s", err)
-			return fmt.Errorf("response error: %s", err)
-		} else {
-			fmt.Print(string(val))
-		}
-		return nil
-	},
+func NewPingCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "ping",
+		Short: "A brief description of your command",
+		Long:  ``,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			endpoint := strings.Join([]string{baseURL, "ping"}, "/")
+			//
+			resp, err := http.Get(
+				endpoint,
+			)
+			if err != nil {
+				log.Fatalf("Error making GET /ping: %v", err)
+				return fmt.Errorf("error making GET /ping: %v", err)
+			}
+			defer resp.Body.Close()
+			//
+			if resp.StatusCode != http.StatusOK {
+				log.Fatalf("received status code %d", resp.StatusCode)
+				return fmt.Errorf("received status code %d", resp.StatusCode)
+			}
+			if val, err := io.ReadAll(resp.Body); err != nil {
+				log.Fatalf("response error: %s", err)
+				return fmt.Errorf("response error: %s", err)
+			} else {
+				fmt.Print(string(val))
+			}
+			return nil
+		},
+	}
 }
+
+var pingCmd = NewPingCmd()
 
 func init() {
 	rootCmd.AddCommand(pingCmd)
