@@ -1,4 +1,4 @@
-package data
+package tests
 
 import (
 	"fmt"
@@ -6,10 +6,11 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	data "zenith/models"
 )
 
 func TestAddRequest(t *testing.T) {
-	var rs AddRequest
+	var rs data.AddRequest
 	test_service_name := "test_service_1"
 	payload := fmt.Sprintf(`{"service_name": "%s"}`, test_service_name)
 	t.Logf("[*] Initialized `rs` %v", rs)
@@ -20,7 +21,7 @@ func TestAddRequest(t *testing.T) {
 	)
 	t.Logf("[*] Initialized `rq`")
 	defer rq.Body.Close()
-	if err := Decode(&rs, rq.Body); err != nil {
+	if err := data.Decode(&rs, rq.Body); err != nil {
 		t.Fatalf("Error in Decode: %s", err.Error())
 	}
 	if ok := rs.Validate(); !ok {
@@ -33,7 +34,7 @@ func TestAddRequest(t *testing.T) {
 }
 
 func TestRemoveRequest(t *testing.T) {
-	var rs RemoveRequest
+	var rs data.RemoveRequest
 	test_service_name := "test_service_2"
 	payload := fmt.Sprintf(`{"service_name": "%s"}`, test_service_name)
 	t.Logf("[*] Initialized `rs` %v", rs)
@@ -44,7 +45,7 @@ func TestRemoveRequest(t *testing.T) {
 	)
 	t.Logf("[*] Initialized `rq`")
 	defer rq.Body.Close()
-	if err := Decode(&rs, rq.Body); err != nil {
+	if err := data.Decode(&rs, rq.Body); err != nil {
 		t.Fatalf("Error in Decode: %s", err.Error())
 	}
 	if ok := rs.Validate(); !ok {

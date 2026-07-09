@@ -1,13 +1,14 @@
-package core
+package tests
 
 import (
 	"testing"
 	"time"
+	"zenith/core"
 )
 
 func TestServiceData(t *testing.T) {
 	testKey := "test"
-	sd := NewSystem()
+	sd := core.NewSystem()
 	// Add
 	sd.Add(testKey)
 	t.Logf("[*] Data added: %s", testKey)
@@ -41,10 +42,10 @@ func TestServiceData(t *testing.T) {
 	}
 	// GetAll
 	curTime := time.Now().Format(time.DateTime)
-	mockService := NewCustomService(1, curTime)
-	data1 := NewSystem()
+	mockService := core.NewCustomService(1, curTime)
+	data1 := core.NewSystem()
 	data1.Set("test-02", mockService)
-	data2 := make(map[string]Service)
+	data2 := make(map[string]core.Service)
 	data2["test-02"] = mockService
 	if data1.GetAll()["test-02"] != data2["test-02"] {
 		t.Fatal("GetAll method on ServiceData failed")
