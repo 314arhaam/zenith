@@ -44,7 +44,7 @@ func TestServiceData(t *testing.T) {
 	mockService := NewCustomService(1, curTime)
 	data1 := NewSystem()
 	data1.Set("test-02", mockService)
-	data2 := make(map[string]service)
+	data2 := make(map[string]Service)
 	data2["test-02"] = mockService
 	if data1.GetAll()["test-02"] != data2["test-02"] {
 		t.Fatal("GetAll method on ServiceData failed")

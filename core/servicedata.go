@@ -8,42 +8,42 @@ import (
 	"time"
 )
 
-type service struct {
+type Service struct {
 	ServiceID      uint64 `json:"service_id"`
 	CreateDateTime string `json:"create_datetime"`
 }
 
 type System struct {
-	data map[string]service
+	data map[string]Service
 	mu   sync.Mutex
 }
 
-func NewCustomService(serviceId uint64, dt string) service {
-	return service{
+func NewCustomService(serviceId uint64, dt string) Service {
+	return Service{
 		ServiceID:      serviceId,
 		CreateDateTime: dt,
 	}
 }
 
-func NewService() service {
-	return service{
+func NewService() Service {
+	return Service{
 		ServiceID:      uint64(rand.Intn(1000)),
 		CreateDateTime: time.Now().Format(time.DateTime),
 	}
 }
 
 func NewSystem() System {
-	return System{data: make(map[string]service)}
+	return System{data: make(map[string]Service)}
 }
 
-func (s *System) Get(key string) (service, bool) {
+func (s *System) Get(key string) (Service, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	val, ok := s.data[key]
 	return val, ok
 }
 
-func (s *System) Set(key string, val service) {
+func (s *System) Set(key string, val Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[key] = val
@@ -66,7 +66,7 @@ func (s *System) Marshal() (string, error) {
 	return string(dm), nil
 }
 
-func (s *System) GetAll() map[string]service {
+func (s *System) GetAll() map[string]Service {
 	return s.data
 }
 
