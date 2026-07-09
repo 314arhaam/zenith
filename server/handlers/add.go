@@ -39,10 +39,10 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error in data check", http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(val); err != nil {
 		http.Error(w, "Error in encoding", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
 }
