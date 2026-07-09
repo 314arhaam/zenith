@@ -8,8 +8,8 @@ import (
 	data "zenith/models"
 )
 
-func TestAddEndpoint(t *testing.T) {
-	endpoint := "/add"
+func TestRemoveEndPoint(t *testing.T) {
+	endpoint := "/remove"
 	serviceName := "test_service"
 	var request string
 	var err error
@@ -19,7 +19,6 @@ func TestAddEndpoint(t *testing.T) {
 	t.Log("\n[*] Request body OK")
 	server := NewTestServer()
 	defer server.Close()
-	t.Log("\n[*] Server OK")
 	resp, err := http.Post(
 		server.URL+endpoint,
 		"application/json",
@@ -29,7 +28,7 @@ func TestAddEndpoint(t *testing.T) {
 		t.Fatalf("\n[x] Errorin POST method: %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusNotFound {
 		t.Fatalf("\n[x] Errorin response: StatusCode %d", resp.StatusCode)
 	}
 	if v, err := io.ReadAll(resp.Body); err != nil {
