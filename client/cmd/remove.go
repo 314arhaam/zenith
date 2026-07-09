@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	data "zenith/models"
@@ -28,7 +27,7 @@ var removeCmd = &cobra.Command{
 		req := data.RemoveRequest{ServiceName: serviceName}
 		body, err := json.Marshal(req)
 		if err != nil {
-			log.Fatalf("Error marshaling request payload: %v", err)
+			// log.Fatalf("Error marshaling request payload: %v", err)
 			return fmt.Errorf("error marshaling request payload: %v", err)
 		}
 		//
@@ -38,13 +37,13 @@ var removeCmd = &cobra.Command{
 			bytes.NewBuffer(body),
 		)
 		if err != nil {
-			log.Fatalf("Error making POST request: %v, payload: %s", err, body)
+			// log.Fatalf("Error making POST request: %v, payload: %s", err, body)
 			return fmt.Errorf("error making POST request: %v", err)
 		}
 		defer resp.Body.Close()
 		//
 		if resp.StatusCode != http.StatusCreated {
-			log.Fatalf("received status code %d", resp.StatusCode)
+			// log.Fatalf("received status code %d", resp.StatusCode)
 			return fmt.Errorf("received status code %d", resp.StatusCode)
 		}
 		fmt.Printf("Status Code: %d", resp.StatusCode)

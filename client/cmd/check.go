@@ -29,18 +29,18 @@ var checkCmd = &cobra.Command{
 		retry := 0
 		maxRetry, err := cmd.Flags().GetInt("max-retry")
 		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
+			// log.Fatalf("Error in flag: %v", err)
+			return err
 		}
 		dt, err := cmd.Flags().GetInt("interval")
 		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
+			// log.Fatalf("Error in flag: %v", err)
+			return err
 		}
 		sleepDt, err := cmd.Flags().GetInt("sleep")
 		if err != nil {
-			log.Fatalf("Error in flag: %v", err)
-			return nil
+			// log.Fatalf("Error in flag: %v", err)
+			return err
 		}
 		step := 0
 		for {

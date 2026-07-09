@@ -6,7 +6,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -25,17 +24,17 @@ var pingCmd = &cobra.Command{
 			endpoint,
 		)
 		if err != nil {
-			log.Fatalf("Error making GET /ping: %v", err)
+			// log.Fatalf("Error making GET /ping: %v", err)
 			return fmt.Errorf("error making GET /ping: %v", err)
 		}
 		defer resp.Body.Close()
 		//
 		if resp.StatusCode != http.StatusOK {
-			log.Fatalf("received status code %d", resp.StatusCode)
+			// log.Fatalf("received status code %d", resp.StatusCode)
 			return fmt.Errorf("received status code %d", resp.StatusCode)
 		}
 		if val, err := io.ReadAll(resp.Body); err != nil {
-			log.Fatalf("response error: %s", err)
+			// log.Fatalf("response error: %s", err)
 			return fmt.Errorf("response error: %s", err)
 		} else {
 			fmt.Print(string(val))
