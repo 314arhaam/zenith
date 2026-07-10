@@ -85,7 +85,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./zenith_server
-        ./zenith_server 8080
+        ./zenith_server 8080 &
     
     - name: Add service
       run: |
@@ -114,13 +114,17 @@ jobs:
         retry: 3
         hostname: test
 
+    - name: Sleep
+      shell: bash
+      run: sleep 10
+
     - name: Ping
       shell: bash
       run: curl -X GET server:8080/ping
     
     - name: Sleep
       shell: bash
-      run: sleep 60
+      run: sleep 10
   
   client01:
     needs: [ping_on_server]
