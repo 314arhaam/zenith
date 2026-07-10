@@ -107,6 +107,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     
+    - name: Download client binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_client
+    
     - uses: tailscale/github-action@v3
       with:
         authkey: ${{ secrets.TS_AUTH_KEY }}
@@ -114,17 +119,11 @@ jobs:
         retry: 3
         hostname: test
 
-    - name: Sleep
-      shell: bash
-      run: sleep 10
-
     - name: Ping
       shell: bash
-      run: curl -X GET server:8080/ping
-    
-    - name: Sleep
-      shell: bash
-      run: sleep 10
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url http://server:8080 ping --until 360
   
   client01:
     needs: [ping_on_server]
