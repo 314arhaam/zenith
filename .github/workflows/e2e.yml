@@ -85,7 +85,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./zenith_server
-        ./zenith_server http://0.0.0.0:8080
+        ./zenith_server 8080
     
     - name: Add service
       run: |
@@ -107,6 +107,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     
+    - uses: tailscale/github-action@v3
+      with:
+        authkey: ${{ secrets.TS_AUTH_KEY }}
+        tags: tag:ci
+        retry: 3
+        hostname: test
+
     - name: Ping
       shell: bash
       run: curl -X GET server:8080/ping
