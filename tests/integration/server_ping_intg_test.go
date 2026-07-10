@@ -23,7 +23,7 @@ func TestPingEndpoint(t *testing.T) {
 	if pong, err := io.ReadAll(resp.Body); err != nil {
 		t.Fatalf("\n[x] Errorin response body io.ReadAll: %v", err)
 	} else {
-		if string(pong) != "Pong" {
+		if string(pong) != "Pong\n" {
 			t.Fatalf("Invalid response %s", string(pong))
 		} else {
 			t.Logf("\n[*] Success: %s", string(pong))

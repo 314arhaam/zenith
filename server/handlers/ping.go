@@ -9,7 +9,7 @@ func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method must be GET", http.StatusMethodNotAllowed)
 		return
 	}
-	pong := []byte("Pong")
+	pong := []byte("Pong\n")
 	w.WriteHeader(http.StatusOK)
 	w.Write(pong)
 }
