@@ -25,7 +25,7 @@ jobs:
           go test ./tests/core_*_test.go -v
 
   server_tests:
-    depends-on: [core_tests]
+    needs: [core_tests]
     runs-on: ubuntu-22.04
     steps:
 
@@ -50,7 +50,7 @@ jobs:
           go test ./tests/integration/server_*.go ./tests/integration/*_utils.go -v
 
   client_tests:
-    depends-on: [server_tests]
+    needs: [server_tests]
     runs-on: ubuntu-22.04
     steps:
 
@@ -70,8 +70,8 @@ jobs:
           go test ./tests/client_*.go ./tests/*_utils.go -v
 
   server_build:
-    depends-on: [server_tests]
-    runs-on:
+    needs: [server_tests]
+    runs-on: ubuntu-22.04
     steps:
 
     - uses: actions/checkout@v4
@@ -96,8 +96,8 @@ jobs:
         retention-days: 1
 
   client_build:
-    depends-on: [client_tests]
-    runs-on:
+    needs: [client_tests]
+    runs-on: ubuntu-22.04
     steps:
 
     - uses: actions/checkout@v4
