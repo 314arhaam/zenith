@@ -21,7 +21,7 @@ func TestPing(t *testing.T) {
 	defer w.Result().Body.Close()
 	if val, err := io.ReadAll(w.Result().Body); err != nil {
 		t.Fatalf("Error in reading response: %s", err.Error())
-	} else if string(val) != "Pong" {
+	} else if string(val) != "Pong\n" {
 		t.Fatalf("Error in reponse: not Pong: %s", val)
 	} else {
 		t.Logf("%s", val)
