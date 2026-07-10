@@ -4,23 +4,119 @@ on:
   workflow_dispatch:
 
 jobs:
+
+  core_tests:
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      
+      - name: Go mod tidy
+        run: go mod tidy
+      
+      - name: Unit tests
+        shell: bash
+        run: |
+          go test ./tests/core_*_test.go -v
+
   server_tests:
-  runs-on:
-  steps:
-  - name: Unit tests
+    depends-on: [core_tests]
+    runs-on: ubuntu-22.04
+    steps:
 
-  server_build:
-  runs-on:
-  steps:
+      - uses: actions/checkout@v4
 
-  server_e2e:
-  runs-on:
-  steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Go mod tidy
+        run: go mod tidy
+
+      - name: Unit tests
+        shell: bash
+        run: | 
+          go test ./tests/server_*.go ./tests/*_utils.go -v
+      
+      - name: Integration tests
+        shell: bash
+        run: |
+          go test ./tests/integration/server_*.go ./tests/integration/*_utils.go -v
 
   client_tests:
-  runs-on:
-  steps:
+    depends-on: [server_tests]
+    runs-on: ubuntu-22.04
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+    
+      - name: Go mod tidy
+        run: go mod tidy
+
+      - name: Combined tests
+        shell: bash
+        run: | 
+          go test ./tests/client_*.go ./tests/*_utils.go -v
+
+  server_build:
+    depends-on: [server_tests]
+    runs-on:
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.26'
+
+    - name: Go mod tidy
+      run: go mod tidy
+    
+    - name: Build go binaries
+      shell: bash
+      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_server server/main.go
+    
+    - name: Upload zenith_server binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: zenith_server
+        path: zenith_server
+        retention-days: 1
 
   client_build:
-  runs-on:
-  steps:
+    depends-on: [client_tests]
+    runs-on:
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.26'
+
+    - name: Go mod tidy
+      run: go mod tidy
+    
+    - name: Build go binaries
+      shell: bash
+      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_client client/main.go
+    
+    - name: Upload zenith_client binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: zenith_client
+        path: zenith_client
+        retention-days: 1
