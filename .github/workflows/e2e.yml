@@ -154,7 +154,7 @@ jobs:
     - name: Check
       shell: bash
       run: |
-        ./zenith_client --url http://server:8080 check
+        ./zenith_client --url http://server:8080 check client01_service
 
   shutdown_system:
     needs: [ping_on_server]
