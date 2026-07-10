@@ -149,12 +149,12 @@ jobs:
       shell: bash
       run: |
         chmod +x ./zenith_client
-        ./zenith_client --url server:8080 add client01_service
+        ./zenith_client --url http://server:8080 add client01_service
     
     - name: Check
       shell: bash
       run: |
-        zenith_client --url server:8080 check
+        zenith_client --url http://server:8080 check
 
   shutdown_system:
     needs: [ping_on_server]
@@ -178,7 +178,7 @@ jobs:
       shell: bash
       run: |
         chmod +x ./zenith_client
-        ./zenith_client --url server:8080 remove client01_service
+        ./zenith_client --url http://server:8080 remove client01_service
 
     - name: Sleep to simulate load
       shell: bash
@@ -188,4 +188,4 @@ jobs:
       shell: bash
       run: |
         chmod +x ./zenith_client
-        ./zenith_client --url server:8080 remove main_service
+        ./zenith_client --url http://server:8080 remove main_service
