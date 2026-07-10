@@ -1,0 +1,121 @@
+name: Zenith End-to-End Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  start_server:
+    runs-on: ubuntu-22.04
+    env:
+      - SYSTEM_NAME: server
+    steps:
+    
+    - name: Download server binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_server
+    
+    - name: Download client binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_client
+    
+    - uses: tailscale/github-action@v3
+      with:
+        authkey: ${{ secrets.TS_AUTH_KEY }}
+        tags: tag:ci
+        retry: 3
+        hostname: ${{ env.SYSTEM_NAME }}
+
+    - name: Server up
+      shel:: bash
+      run: |
+        chmod +x ./zenith_server
+        ./zenith_server http://0.0.0.0:8080
+    
+    - name: Add service
+      run: |
+        curl -X POST http://0.0.0.0:8080/add \
+            -H "Content-Type: application/json" \
+            -d '{"service_name": "main_service"}' \
+            -i
+    
+    - name: Check
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url http://0.0.0.0:8080 check
+  
+  ping_on_server:
+    runs-on: ubuntu-22.04
+    steps:
+    
+    - name: Ping
+      shell: bash
+      run: curl -X GET server:8080/ping
+    
+    - name: Sleep
+      shell: bash
+      run: sleep 60
+  
+  client01:
+    needs: [ping_on_server]
+    runs-on: ubuntu-22.04
+    env:
+      - SYSTEM_NAME: client-01
+    
+    steps:
+    - name: Download client binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_client
+    
+    - uses: tailscale/github-action@v3
+      with:
+        authkey: ${{ secrets.TS_AUTH_KEY }}
+        tags: tag:ci
+        retry: 3
+        hostname: ${{ env.SYSTEM_NAME }}
+    
+    - name: Add service
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url server:8080 add client01_service
+    
+    - name: Check
+      shell: bash
+      run: |
+        zenith_client --url server:8080 check
+
+  shutdown_system:
+    needs: [ping_on_server]
+    runs-on: ubuntu-22.04
+    steps:
+    
+    - uses: tailscale/github-action@v3
+      with:
+        authkey: ${{ secrets.TS_AUTH_KEY }}
+        tags: tag:ci
+        retry: 3
+        hostname: ${{ env.SYSTEM_NAME }}
+
+    - name: Sleep to simulate load
+      shell: bash
+      run: sleep 60
+    
+    - name: Terminate client-01
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url server:8080 remove client01_service
+
+    - name: Sleep to simulate load
+      shell: bash
+      run: sleep 10
+
+    - name: Terminate client-01
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url server:8080 remove main_service
