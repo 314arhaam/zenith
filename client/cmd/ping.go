@@ -8,9 +8,35 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
+
+func ping() error {
+	endpoint := strings.Join([]string{baseURL, "ping"}, "/")
+	//
+	resp, err := http.Get(
+		endpoint,
+	)
+	if err != nil {
+		// log.Fatalf("Error making GET /ping: %v", err)
+		return fmt.Errorf("error making GET /ping: %v", err)
+	}
+	defer resp.Body.Close()
+	//
+	if resp.StatusCode != http.StatusOK {
+		// log.Fatalf("received status code %d", resp.StatusCode)
+		return fmt.Errorf("received status code %d", resp.StatusCode)
+	}
+	if val, err := io.ReadAll(resp.Body); err != nil {
+		// log.Fatalf("response error: %s", err)
+		return fmt.Errorf("response error: %s", err)
+	} else {
+		fmt.Print(string(val))
+	}
+	return nil
+}
 
 // pingCmd represents the ping command
 var pingCmd = &cobra.Command{
@@ -18,28 +44,28 @@ var pingCmd = &cobra.Command{
 	Short: "A brief description of your command",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint := strings.Join([]string{baseURL, "ping"}, "/")
-		//
-		resp, err := http.Get(
-			endpoint,
-		)
+		to, err := cmd.Flags().GetInt("until")
 		if err != nil {
-			// log.Fatalf("Error making GET /ping: %v", err)
-			return fmt.Errorf("error making GET /ping: %v", err)
+			return fmt.Errorf("error in getting value of flag `--until` or `-u`: %w", err)
 		}
-		defer resp.Body.Close()
-		//
-		if resp.StatusCode != http.StatusOK {
-			// log.Fatalf("received status code %d", resp.StatusCode)
-			return fmt.Errorf("received status code %d", resp.StatusCode)
-		}
-		if val, err := io.ReadAll(resp.Body); err != nil {
-			// log.Fatalf("response error: %s", err)
-			return fmt.Errorf("response error: %s", err)
+		startTime := time.Now()
+		if to > 0 {
+			attempt := 1
+			for {
+				err := ping()
+				if err == nil {
+					return nil
+				}
+				if time.Since(startTime).Seconds() > float64(to) {
+					return fmt.Errorf("Timeout reached without any proper response from server")
+				}
+				fmt.Printf("(%5ds / %5ds) Attempt: %d passed with error: %v\n", int(time.Since(startTime).Seconds()), to, attempt, err)
+				attempt += 1
+				time.Sleep(5 * time.Second)
+			}
 		} else {
-			fmt.Print(string(val))
+			return ping()
 		}
-		return nil
 	},
 }
 
@@ -55,4 +81,10 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// pingCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	pingCmd.Flags().IntP(
+		"until",
+		"u",
+		0,
+		"Timeout value. If not pass or pass value zero `0`, it acts as a single shot normal ping command.",
+	)
 }
