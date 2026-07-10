@@ -29,7 +29,7 @@ jobs:
         hostname: ${{ env.SYSTEM_NAME }}
 
     - name: Server up
-      shel:: bash
+      shell: bash
       run: |
         chmod +x ./zenith_server
         ./zenith_server http://0.0.0.0:8080
