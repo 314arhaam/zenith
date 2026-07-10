@@ -7,7 +7,8 @@ jobs:
   start_server:
     runs-on: ubuntu-22.04
     env:
-      - SYSTEM_NAME: server
+      SYSTEM_NAME: server
+    
     steps:
     
     - name: Download server binary
@@ -62,7 +63,7 @@ jobs:
     needs: [ping_on_server]
     runs-on: ubuntu-22.04
     env:
-      - SYSTEM_NAME: client-01
+      SYSTEM_NAME: client-01
     
     steps:
     - name: Download client binary
