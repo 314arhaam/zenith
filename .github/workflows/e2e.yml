@@ -92,6 +92,8 @@ jobs:
   shutdown_system:
     needs: [ping_on_server]
     runs-on: ubuntu-22.04
+    env:
+      SYSTEM_NAME: server
     steps:
     
     - uses: tailscale/github-action@v3
