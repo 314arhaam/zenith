@@ -21,8 +21,10 @@ var checkCmd = &cobra.Command{
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endpoint := strings.Join([]string{baseURL, "status"}, "/")
+		notFoundString := "{}\n"
 		if len(args) == 1 {
 			endpoint = endpoint + "?service=" + args[0]
+			notFoundString = fmt.Sprintf("Service not found: %s\n", args[0])
 		} else if len(args) > 1 {
 			return fmt.Errorf("Too many args")
 		}
@@ -67,7 +69,7 @@ var checkCmd = &cobra.Command{
 				return fmt.Errorf("Error in response parsing %v", err)
 			}
 			f := string(body)
-			if f == "{}\n" {
+			if f == notFoundString {
 				retry += 1
 				fmt.Printf("[*] No data available. Retry %d out of %d\n", retry, maxRetry)
 				time.Sleep(time.Duration(dt) * time.Second)
