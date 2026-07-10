@@ -163,6 +163,11 @@ jobs:
       SYSTEM_NAME: server
     steps:
     
+    - name: Download client binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_client
+
     - uses: tailscale/github-action@v3
       with:
         authkey: ${{ secrets.TS_AUTH_KEY }}
@@ -172,7 +177,7 @@ jobs:
 
     - name: Sleep to simulate load
       shell: bash
-      run: sleep 60
+      run: sleep 20
     
     - name: Terminate client-01
       shell: bash
