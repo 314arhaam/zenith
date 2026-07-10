@@ -155,6 +155,36 @@ jobs:
       run: |
         ./zenith_client --url http://server:8080 check client01_service
 
+  client02:
+    needs: [ping_on_server]
+    runs-on: ubuntu-22.04
+    env:
+      SYSTEM_NAME: client-02
+    
+    steps:
+    - name: Download client binary
+      uses: actions/download-artifact@v4
+      with:
+        name: zenith_client
+    
+    - uses: tailscale/github-action@v3
+      with:
+        authkey: ${{ secrets.TS_AUTH_KEY }}
+        tags: tag:ci
+        retry: 3
+        hostname: ${{ env.SYSTEM_NAME }}
+    
+    - name: Add service
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url http://server:8080 add client_02
+    
+    - name: Check
+      shell: bash
+      run: |
+        ./zenith_client --url http://server:8080 check client_02
+
   shutdown_system:
     needs: [ping_on_server]
     runs-on: ubuntu-22.04
@@ -176,7 +206,7 @@ jobs:
 
     - name: Sleep to simulate load
       shell: bash
-      run: sleep 20
+      run: sleep 10
     
     - name: Terminate client-01
       shell: bash
@@ -186,9 +216,19 @@ jobs:
 
     - name: Sleep to simulate load
       shell: bash
-      run: sleep 10
+      run: sleep 12
 
-    - name: Terminate client-01
+    - name: Terminate client-02
+      shell: bash
+      run: |
+        chmod +x ./zenith_client
+        ./zenith_client --url http://server:8080 remove client_02
+    
+    - name: Sleep to simulate load
+      shell: bash
+      run: sleep 4
+
+    - name: Terminate server
       shell: bash
       run: |
         chmod +x ./zenith_client
