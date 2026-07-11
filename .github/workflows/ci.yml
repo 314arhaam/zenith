@@ -2,6 +2,26 @@ name: CI
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    
+    paths-ignore:
+      - "README.md"
+      - "**/*.md"
+      - "**/*.png"
+
+  pull_request:
+    
+    paths-ignore:
+      - "README.md"
+      - "**/*.md"
+      - "**/*.png"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 
 jobs:
 
