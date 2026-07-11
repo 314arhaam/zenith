@@ -1,4 +1,4 @@
-name: build_and_release
+name: Release
 
 on:
   push:
@@ -56,6 +56,8 @@ jobs:
           if-no-files-found: error
 
   create_release_and_upload_assets:
+    permissions:
+      contents: write
     needs: build_and_upload
     runs-on: ubuntu-latest
     steps:
