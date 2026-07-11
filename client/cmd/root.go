@@ -1,5 +1,5 @@
 /*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
+Copyright © 2026 314arhaam <prmbas@gmail.com>
 */
 package cmd
 
