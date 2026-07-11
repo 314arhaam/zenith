@@ -166,7 +166,6 @@ zenith_client remove api
 | POST   | `/add`    | Register a service        |
 | DELETE* | `/remove` | Remove a service          |
 | GET    | `/status` | Query service status      |
-| GET    | `/check`  | Check registered services |
 
 Example:
 
