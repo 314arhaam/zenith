@@ -1,7 +1,7 @@
 # Zenith
 
 [![CI](https://github.com/314arhaam/zenith/actions/workflows/ci.yml/badge.svg)](https://github.com/314arhaam/zenith/actions/workflows/ci.yml)
-[![E2E Test](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml/badge.svg)](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml)
+[![E2E Test](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml)
 
 > A lightweight service registry consisting of a Go REST API server and a Cobra-powered CLI client. To keep Github Actions VMs up in a controlled manner, to deploy platforms.
 
