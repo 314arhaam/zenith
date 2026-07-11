@@ -164,7 +164,7 @@ zenith_client remove api
 | ------ | --------- | ------------------------- |
 | GET    | `/ping`   | Health endpoint           |
 | POST   | `/add`    | Register a service        |
-| DELETE | `/remove` | Remove a service          |
+| DELETE* | `/remove` | Remove a service          |
 | GET    | `/status` | Query service status      |
 | GET    | `/check`  | Check registered services |
 
