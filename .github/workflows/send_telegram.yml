@@ -35,7 +35,7 @@ jobs:
         run: | 
           echo "Calculating checksums..."
           # For each expected binary, generate checksum
-          for f in zenith_*.tar.gz; do
+          for f in $(ls zenith_* | xargs); do
             if [[ -f "$f" ]]; then
               sha256sum "$f" >> checksums.txt
             fi
