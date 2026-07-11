@@ -67,16 +67,21 @@ func TestStatusEndpoint(t *testing.T) {
 	}
 	//
 	endpoint = "/remove"
-	resp, err = http.Post(
+	client := &http.Client{}
+	req, err := http.NewRequest(
+		http.MethodDelete,
 		server.URL+endpoint,
-		"application/json",
 		strings.NewReader(request),
 	)
 	if err != nil {
-		t.Fatalf("\n[x] Errorin POST method: %v", err)
+		t.Fatalf("\n[x] Error in DELETE request make: %v", err)
+	}
+	resp, err = client.Do(req)
+	if err != nil {
+		t.Fatalf("\n[x] Error in DELETE Do: %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusNoContent {
 		t.Fatalf("\n[x] Errorin response /status: StatusCode %d", resp.StatusCode)
 	}
 	if v, err := io.ReadAll(resp.Body); err != nil {

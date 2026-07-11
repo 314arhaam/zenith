@@ -10,8 +10,8 @@ func (h *Handler) remove(serviceName string) bool {
 }
 
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Use POST method", http.StatusMethodNotAllowed)
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Use DELETE method", http.StatusMethodNotAllowed)
 		return
 	}
 	defer r.Body.Close()
@@ -29,5 +29,5 @@ func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusNoContent)
 }

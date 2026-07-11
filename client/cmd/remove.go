@@ -4,7 +4,6 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,25 +23,29 @@ var removeCmd = &cobra.Command{
 		endpoint := strings.Join([]string{baseURL, "remove"}, "/")
 		serviceName := args[0]
 		//
-		req := data.RemoveRequest{ServiceName: serviceName}
-		body, err := json.Marshal(req)
+		reqStruct := data.RemoveRequest{ServiceName: serviceName}
+		body, err := json.Marshal(reqStruct)
 		if err != nil {
 			// log.Fatalf("Error marshaling request payload: %v", err)
 			return fmt.Errorf("error marshaling request payload: %v", err)
 		}
 		//
-		resp, err := http.Post(
+		client := &http.Client{}
+		req, err := http.NewRequest(
+			http.MethodDelete,
 			endpoint,
-			"application/json",
-			bytes.NewBuffer(body),
+			strings.NewReader(string(body)),
 		)
 		if err != nil {
-			// log.Fatalf("Error making POST request: %v, payload: %s", err, body)
-			return fmt.Errorf("error making POST request: %v", err)
+			return fmt.Errorf("\n[x] Error in DELETE request creation: %v", err)
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			return fmt.Errorf("\n[x] Error in DELETE method: %v", err)
 		}
 		defer resp.Body.Close()
 		//
-		if resp.StatusCode != http.StatusCreated {
+		if resp.StatusCode != http.StatusNoContent {
 			// log.Fatalf("received status code %d", resp.StatusCode)
 			return fmt.Errorf("received status code %d", resp.StatusCode)
 		}
