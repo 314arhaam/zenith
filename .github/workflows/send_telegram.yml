@@ -1,0 +1,98 @@
+name: Send release artifacts to Telegram
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    branches: ["v*"]
+    types: 
+      - completed
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git tag to send binaries from (e.g., v1.0.0)'
+        required: true
+
+jobs:
+  send_release_to_telegram:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download release assets
+        uses: robinraju/release-downloader@v1
+        with:
+          tag: ${{ github.event.inputs.tag }}
+          fileName: 'zenith_*'
+          tarBall: false
+          zipBall: false
+
+      - name: List downloaded files (for debugging)
+        run: ls -lh
+
+      - name: Calculate SHA256 checksums
+        run: | 
+          echo "Calculating checksums..."
+          # For each expected binary, generate checksum
+          for f in zenith_*.tar.gz; do
+            if [[ -f "$f" ]]; then
+              sha256sum "$f" >> checksums.txt
+            fi
+          done
+          echo "Generated checksums:"
+          cat checksums.txt
+
+      - name: Generate custom styled message
+        id: custom_message
+        run: MESSAGE="🚀 *Release \`${{ github.event.inputs.tag }}\`* 🚀"
+
+      - name: Send styled message to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID_CHANNEL: ${{ secrets.TELEGRAM_CHAT_ID_CHANNEL }}
+        run: |
+          REPO_NAME=${{ github.event.repository.name }}
+          TAG_NAME=${{ github.event.inputs.tag }}
+          REPO_LINK="https://github.com/314arhaam/$REPO_NAME/releases/tag/$TAG_NAME"
+          curl -s -X POST \
+            -d chat_id="$TELEGRAM_CHAT_ID_CHANNEL" \
+            -d parse_mode="MarkdownV2" \
+            -d text="🚀 *New Release:* \`$REPO_NAME\`@\`$TAG_NAME\` 
+             \ 
+            [Check it out]($REPO_LINK)" \
+            "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage"
+
+      - name: Send binaries and checksums to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID_CHANNEL: ${{ secrets.TELEGRAM_CHAT_ID_CHANNEL }}
+        run: |
+          echo "Uploading binaries to Telegram..."
+
+          # Loop through known binaries
+          for FILE in zenith_*.tar.gz; do
+            if [[ -f "$FILE" ]]; then
+              CHECKSUM=$(grep "$FILE" checksums.txt | awk '{print $1}')
+              CAPTION="📦 \ 
+            *File:* \`$FILE\` \ 
+            *SHA256:* \`$CHECKSUM\` \ 
+            _Tag:_ \`${{ github.event.inputs.tag }}\` \
+              "
+              curl -s -X POST \
+                -F "chat_id=$TELEGRAM_CHAT_ID_CHANNEL" \
+                -F "caption=$CAPTION" \
+                -F "parse_mode=MarkdownV2" \
+                -F "document=@$FILE" \
+                "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
+              echo " -> Sent $FILE"
+            fi
+          done
+
+          # Also send the checksums.txt file
+          curl -s -X POST \
+            -F "chat_id=$TELEGRAM_CHAT_ID_CHANNEL" \
+            -F "caption=_Full checksums list_" \
+            -F "parse_mode=MarkdownV2" \
+            -F "document=@checksums.txt" \
+            "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendDocument"
