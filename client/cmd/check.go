@@ -17,7 +17,7 @@ import (
 // checkCmd represents the check command
 var checkCmd = &cobra.Command{
 	Use:   "check",
-	Short: "A brief description of your command",
+	Short: "Continuously checks if a service or all services are available in zenith server",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		endpoint := strings.Join([]string{baseURL, "status"}, "/")
