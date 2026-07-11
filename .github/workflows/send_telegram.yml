@@ -71,7 +71,7 @@ jobs:
           echo "Uploading binaries to Telegram..."
 
           # Loop through known binaries
-          for FILE in zenith_*.tar.gz; do
+          for FILE in $(ls zenith_* | xargs); do
             if [[ -f "$FILE" ]]; then
               CHECKSUM=$(grep "$FILE" checksums.txt | awk '{print $1}')
               CAPTION="📦 \ 
