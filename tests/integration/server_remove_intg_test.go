@@ -19,20 +19,25 @@ func TestRemoveEndPoint(t *testing.T) {
 	t.Log("\n[*] Request body OK")
 	server := NewTestServer()
 	defer server.Close()
-	resp, err := http.Post(
+	client := &http.Client{}
+	req, err := http.NewRequest(
+		http.MethodDelete,
 		server.URL+endpoint,
-		"application/json",
 		strings.NewReader(request),
 	)
 	if err != nil {
-		t.Fatalf("\n[x] Errorin POST method: %v", err)
+		t.Fatalf("\n[x] Error in DELETE request creation: %v", err)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("\n[x] Error in DELETE method: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNotFound {
-		t.Fatalf("\n[x] Errorin response: StatusCode %d", resp.StatusCode)
+		t.Fatalf("\n[x] Error in response: StatusCode %d", resp.StatusCode)
 	}
 	if v, err := io.ReadAll(resp.Body); err != nil {
-		t.Fatalf("\n[x] Errorin io.ReadAll on response %v", err)
+		t.Fatalf("\n[x] Error in io.ReadAll on response %v", err)
 	} else {
 		t.Logf("\n[*] Response OK, StatusCode %d, Body %s", resp.StatusCode, string(v))
 	}

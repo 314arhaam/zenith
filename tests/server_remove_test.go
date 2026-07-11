@@ -34,7 +34,7 @@ func TestRemove404(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error in request payload marshall")
 	}
-	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
+	w, r := responseAndRequestBuild(http.MethodDelete, url, strings.NewReader(string(payload)))
 	// handle function
 	h.Remove(w, r)
 	if w.Result().StatusCode != 404 {
@@ -54,12 +54,12 @@ func TestRemove(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error in request payload marshall")
 	}
-	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(string(payload)))
+	w, r := responseAndRequestBuild(http.MethodDelete, url, strings.NewReader(string(payload)))
 	_d_, err := json.Marshal(h.Core.GetAll())
 	t.Logf("ServiceData: %v", string(_d_))
 	// handle function
 	h.Remove(w, r)
-	if w.Result().StatusCode != 201 {
+	if w.Result().StatusCode != http.StatusNoContent {
 		t.Errorf("StatusCode not %d", w.Result().StatusCode)
 	} else {
 		t.Logf("StatusCode: %d", w.Result().StatusCode)

@@ -24,7 +24,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /add", h.Add)
-	mux.HandleFunc("POST /remove", h.Remove)
+	mux.HandleFunc("DELETE /remove", h.Remove)
 	mux.HandleFunc("GET /status", h.Status)
 	mux.HandleFunc("GET /ping", h.Ping)
 
