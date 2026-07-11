@@ -55,31 +55,31 @@ jobs:
           path: ${{ matrix.client_bin }}
           if-no-files-found: error
 
-    create_release_and_upload_assets:
-      permissions:
-        contents: write
-      needs: build_and_upload
-      runs-on: ubuntu-latest
+  create_release_and_upload_assets:
+    permissions:
+      contents: write
+    needs: build_and_upload
+    runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/download-artifact@v4
-          with:
-            path: artifacts
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
-        - name: Create release and upload assets
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: ${{ github.ref_name }}
-            name: ${{ github.ref_name }}
-            draft: false
-            prerelease: false
-            generate_release_notes: true
-            files: |
-              artifacts/zenith_server-linux-amd64/zenith_server-linux-amd64
-              artifacts/zenith_client-linux-amd64/zenith_client-linux-amd64
-              artifacts/zenith_server-darwin-amd64/zenith_server-darwin-amd64
-              artifacts/zenith_client-darwin-amd64/zenith_client-darwin-amd64
-              artifacts/zenith_server-windows-amd64.exe/zenith_server-windows-amd64.exe
-              artifacts/zenith_client-windows-amd64.exe/zenith_client-windows-amd64.exe
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            artifacts/zenith_server-linux-amd64/zenith_server-linux-amd64
+            artifacts/zenith_client-linux-amd64/zenith_client-linux-amd64
+            artifacts/zenith_server-darwin-amd64/zenith_server-darwin-amd64
+            artifacts/zenith_client-darwin-amd64/zenith_client-darwin-amd64
+            artifacts/zenith_server-windows-amd64.exe/zenith_server-windows-amd64.exe
+            artifacts/zenith_client-windows-amd64.exe/zenith_client-windows-amd64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
