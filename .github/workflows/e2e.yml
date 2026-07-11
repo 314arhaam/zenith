@@ -2,10 +2,21 @@ name: E2E Test
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["CI"]
-    types: 
-      - completed
+  push:
+    branches:
+      - main
+    
+    paths-ignore:
+      - "README.md"
+      - "**/*.md"
+      - "**/*.png"
+
+  pull_request:
+    
+    paths-ignore:
+      - "README.md"
+      - "**/*.md"
+      - "**/*.png"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
