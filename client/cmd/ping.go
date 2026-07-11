@@ -41,7 +41,7 @@ func ping() error {
 // pingCmd represents the ping command
 var pingCmd = &cobra.Command{
 	Use:   "ping",
-	Short: "A brief description of your command",
+	Short: "Check availablity of zenith server, either single-shot or continuous",
 	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		to, err := cmd.Flags().GetInt("until")
