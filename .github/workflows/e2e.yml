@@ -1,254 +1,91 @@
-name: E2E Test
-
+name: E2E
 on:
   workflow_dispatch:
+  workflow_call:
   push:
-    branches:
-      - main
-    
-    paths-ignore:
-      - "README.md"
-      - "**/*.md"
-      - "**/*.png"
-
+    branches: [main]
   pull_request:
-    
-    paths-ignore:
-      - "README.md"
-      - "**/*.md"
-      - "**/*.png"
-
+permissions:
+  contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+  group: e2e-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 jobs:
-  server_build:
-    runs-on: ubuntu-22.04
+  builds:
+    uses: ./.github/workflows/build.yml
+  lifecycle:
+    name: Released binaries on ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: builds
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            goos: linux
+            goarch: amd64
+            python_arch: x64
+            ext: ''
+            race_flag: '--race'
+          - runner: ubuntu-24.04-arm
+            goos: linux
+            goarch: arm64
+            python_arch: arm64
+            ext: ''
+            race_flag: '--race'
+          - runner: windows-2025
+            goos: windows
+            goarch: amd64
+            python_arch: x64
+            ext: '.exe'
+            race_flag: '--race'
+          - runner: windows-11-arm
+            goos: windows
+            goarch: arm64
+            python_arch: arm64
+            ext: '.exe'
+            race_flag: ''
+          - runner: macos-15-intel
+            goos: darwin
+            goarch: amd64
+            python_arch: x64
+            ext: ''
+            race_flag: '--race'
+          - runner: macos-15
+            goos: darwin
+            goarch: arm64
+            python_arch: arm64
+            ext: ''
+            race_flag: '--race'
     steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.26'
-
-    - name: Go mod tidy
-      run: go mod tidy
-    
-    - name: Build go binaries
-      shell: bash
-      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_server server/main.go
-    
-    - name: Upload zenith_server binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: zenith_server
-        path: zenith_server
-        retention-days: 1
-
-  client_build:
-    runs-on: ubuntu-22.04
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.26'
-
-    - name: Go mod tidy
-      run: go mod tidy
-    
-    - name: Build go binaries
-      shell: bash
-      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_client client/main.go
-    
-    - name: Upload zenith_client binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: zenith_client
-        path: zenith_client
-        retention-days: 1
-
-  start_server:
-    needs: 
-      - server_build
-      - client_build
-    runs-on: ubuntu-22.04
-    env:
-      SYSTEM_NAME: server
-    
-    steps:
-    
-    - name: Download server binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_server
-    
-    - name: Download client binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_client
-    
-    - uses: tailscale/github-action@v3
-      with:
-        authkey: ${{ secrets.TS_AUTH_KEY }}
-        tags: tag:ci
-        retry: 3
-        hostname: ${{ env.SYSTEM_NAME }}
-
-    - name: Server up
-      shell: bash
-      run: |
-        chmod +x ./zenith_server
-        ./zenith_server 8080 &
-    
-    - name: Add service
-      run: |
-        curl -X POST http://0.0.0.0:8080/add \
-            -H "Content-Type: application/json" \
-            -d '{"service_name": "main_service"}' \
-            -i
-    
-    - name: Check
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://0.0.0.0:8080 check
-  
-  ping_on_server:
-    needs: 
-      - server_build
-      - client_build
-    runs-on: ubuntu-22.04
-    steps:
-    
-    - name: Download client binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_client
-    
-    - uses: tailscale/github-action@v3
-      with:
-        authkey: ${{ secrets.TS_AUTH_KEY }}
-        tags: tag:ci
-        retry: 3
-        hostname: test
-
-    - name: Ping
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 ping --until 360
-  
-  client01:
-    needs: [ping_on_server]
-    runs-on: ubuntu-22.04
-    env:
-      SYSTEM_NAME: client-01
-    
-    steps:
-    - name: Download client binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_client
-    
-    - uses: tailscale/github-action@v3
-      with:
-        authkey: ${{ secrets.TS_AUTH_KEY }}
-        tags: tag:ci
-        retry: 3
-        hostname: ${{ env.SYSTEM_NAME }}
-    
-    - name: Add service
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 add client01_service
-    
-    - name: Check
-      shell: bash
-      run: |
-        ./zenith_client --url http://server:8080 check client01_service
-
-  client02:
-    needs: [ping_on_server]
-    runs-on: ubuntu-22.04
-    env:
-      SYSTEM_NAME: client-02
-    
-    steps:
-    - name: Download client binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_client
-    
-    - uses: tailscale/github-action@v3
-      with:
-        authkey: ${{ secrets.TS_AUTH_KEY }}
-        tags: tag:ci
-        retry: 3
-        hostname: ${{ env.SYSTEM_NAME }}
-    
-    - name: Add service
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 add client_02
-    
-    - name: Check
-      shell: bash
-      run: |
-        ./zenith_client --url http://server:8080 check client_02
-
-  shutdown_system:
-    needs: [ping_on_server]
-    runs-on: ubuntu-22.04
-    env:
-      SYSTEM_NAME: server
-    steps:
-    
-    - name: Download client binary
-      uses: actions/download-artifact@v4
-      with:
-        name: zenith_client
-
-    - uses: tailscale/github-action@v3
-      with:
-        authkey: ${{ secrets.TS_AUTH_KEY }}
-        tags: tag:ci
-        retry: 3
-        hostname: ${{ env.SYSTEM_NAME }}
-
-    - name: Sleep to simulate load
-      shell: bash
-      run: sleep 10
-    
-    - name: Terminate client-01
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 remove client01_service
-
-    - name: Sleep to simulate load
-      shell: bash
-      run: sleep 12
-
-    - name: Terminate client-02
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 remove client_02
-    
-    - name: Sleep to simulate load
-      shell: bash
-      run: sleep 4
-
-    - name: Terminate server
-      shell: bash
-      run: |
-        chmod +x ./zenith_client
-        ./zenith_client --url http://server:8080 remove main_service
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+          architecture: ${{ matrix.python_arch }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: binaries-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: artifacts/release
+      - name: Verify and unpack the exact release bundle
+        run: python scripts/release.py unpack --directory artifacts/release --target ${{ matrix.goos }}/${{ matrix.goarch }} --destination artifacts/unpacked
+      - name: Process E2E including console signals and paths with spaces/Unicode
+        # Default native shell: PowerShell on Windows; bash on Unix.
+        # No Go installation, Bash, curl or Make is needed to run Windows binaries.
+        run: >-
+          python scripts/e2e.py
+          --server artifacts/unpacked/zenith-${{ matrix.goos }}-${{ matrix.goarch }}/zenith-server${{ matrix.ext }}
+          --client artifacts/unpacked/zenith-${{ matrix.goos }}-${{ matrix.goarch }}/zenith-client${{ matrix.ext }}
+          --require-executable
+          --log-dir artifacts/e2e
+      - name: Upload process evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: artifacts/e2e/
+          if-no-files-found: warn
+          retention-days: 14

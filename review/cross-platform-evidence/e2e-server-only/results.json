@@ -1,0 +1,22 @@
+{
+  "mode": "server-only",
+  "status": "passed",
+  "platform": "linux",
+  "machine": "x86_64",
+  "passed_groups": 9,
+  "cases": [
+    "server readiness",
+    "empty registry and HEAD",
+    "lifecycle, special-character names and cache invalidation",
+    "malformed JSON, payload limits and query validation",
+    "routing and allowed methods",
+    "concurrent duplicate registration: one winner",
+    "64 concurrent service lifecycles and unique IDs",
+    "server graceful console/SIGTERM shutdown",
+    "server rejects invalid ports and excess arguments"
+  ],
+  "skipped_groups": [
+    "all CLI tests (--server-only)"
+  ],
+  "error": null
+}

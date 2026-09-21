@@ -1,116 +1,78 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// checkCmd represents the check command
-var checkCmd = &cobra.Command{
-	Use:   "check",
-	Short: "Continuously checks if a service or all services are available in zenith server",
-	Long:  ``,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		endpoint := strings.Join([]string{baseURL, "status"}, "/")
-		notFoundString := "{}\n"
-		if len(args) == 1 {
-			endpoint = endpoint + "?service=" + args[0]
-			notFoundString = fmt.Sprintf("Service not found: %s\n", args[0])
-		} else if len(args) > 1 {
-			return fmt.Errorf("Too many args")
-		}
-		retry := 0
-		maxRetry, err := cmd.Flags().GetInt("max-retry")
-		if err != nil {
-			// log.Fatalf("Error in flag: %v", err)
-			return err
-		}
-		dt, err := cmd.Flags().GetInt("interval")
-		if err != nil {
-			// log.Fatalf("Error in flag: %v", err)
-			return err
-		}
-		sleepDt, err := cmd.Flags().GetInt("sleep")
-		if err != nil {
-			// log.Fatalf("Error in flag: %v", err)
-			return err
-		}
-		step := 0
-		for {
-			if retry >= maxRetry {
-				log.Printf("[*] Max retry reached, shutdown")
-				return nil
+func newCheckCommand(opts *options) *cobra.Command {
+	var maxRetry, interval, sleep int
+	var quiet bool
+	command := &cobra.Command{
+		Use: "check [SERVICE]", Short: "Monitor registry membership until failure or cancellation", Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if maxRetry < 1 {
+				return fmt.Errorf("--max-retry must be at least 1")
 			}
-			request, err := http.NewRequest(
-				http.MethodGet,
-				endpoint,
-				nil,
-			)
+			retryInterval, err := secondsDuration("interval", interval, false)
 			if err != nil {
-				return fmt.Errorf("Error in Request create %v", err)
+				return err
 			}
-			request.Header["Content-Type"] = []string{"application/json"}
-			resp, err := http.DefaultClient.Do(request)
+			pollInterval, err := secondsDuration("sleep", sleep, false)
 			if err != nil {
-				return fmt.Errorf("Error in GET %s: %v", endpoint, err)
+				return err
 			}
-			defer resp.Body.Close()
-			body, err := io.ReadAll(resp.Body)
+			name, err := serviceArg(args)
 			if err != nil {
-				return fmt.Errorf("Error in response parsing %v", err)
+				return err
 			}
-			f := string(body)
-			if f == notFoundString {
-				retry += 1
-				fmt.Printf("[*] No data available. Retry %d out of %d\n", retry, maxRetry)
-				time.Sleep(time.Duration(dt) * time.Second)
-			} else {
+			retry, step := 0, uint64(0)
+			for {
+				if err := cmd.Context().Err(); err != nil {
+					return err
+				}
+				var body []byte
+				var available bool
+				if quiet {
+					available, err = opts.client.Present(cmd.Context(), name)
+				} else {
+					body, available, err = opts.client.Status(cmd.Context(), name)
+				}
+				if err != nil {
+					return err
+				}
+				if !available {
+					retry++
+					if !quiet {
+						if _, err := fmt.Fprintf(cmd.OutOrStdout(), "[*] No data available. Retry %d out of %d\n", retry, maxRetry); err != nil {
+							return err
+						}
+					}
+					if retry >= maxRetry {
+						return fmt.Errorf("max retry reached without available service data")
+					}
+					if err := wait(cmd.Context(), retryInterval); err != nil {
+						return err
+					}
+					continue
+				}
 				retry = 0
-				fmt.Printf("[*] Step %d \n\tData: %v", step, string(body))
-				step += 1
-				time.Sleep(time.Duration(sleepDt) * time.Second)
+				if !quiet {
+					if _, err := fmt.Fprintf(cmd.OutOrStdout(), "[*] Step %d\n\tData: %s", step, body); err != nil {
+						return err
+					}
+				}
+				step++
+				if err := wait(cmd.Context(), pollInterval); err != nil {
+					return err
+				}
 			}
-		}
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(checkCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// checkCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// checkCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	checkCmd.Flags().IntP(
-		"max-retry",
-		"r",
-		3,
-		"maximum number of retries if no service(s) found.",
-	)
-	checkCmd.Flags().IntP(
-		"interval",
-		"t",
-		5,
-		"sleep between retries intervals.",
-	)
-	checkCmd.Flags().IntP(
-		"sleep",
-		"s",
-		5,
-		"sleep between polling intervals.",
-	)
+		},
+	}
+	command.Flags().IntVarP(&maxRetry, "max-retry", "r", 3, "Fail after this many consecutive absent observations")
+	command.Flags().IntVarP(&interval, "interval", "t", 5, "Seconds between absent-service retries (positive)")
+	command.Flags().IntVarP(&sleep, "sleep", "s", 5, "Seconds between successful polls (positive)")
+	command.Flags().BoolVarP(&quiet, "quiet", "q", false, "Use body-free HEAD probes and suppress normal output (updated server required)")
+	return command
 }

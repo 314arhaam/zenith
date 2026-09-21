@@ -1,0 +1,19 @@
+{
+  "baseline_sha256": "5d71d3da697ee75f3f4756b52a6abb003660c83c91082978a5d4660f1527b7e8",
+  "local_platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "go": "1.23.2",
+  "python": "3.13.5",
+  "python_tests_passed": 25,
+  "server_only_e2e_groups_passed": 9,
+  "server_cross_builds_passed": [
+    "linux/amd64",
+    "linux/arm64",
+    "windows/amd64",
+    "windows/arm64",
+    "darwin/amd64",
+    "darwin/arm64"
+  ],
+  "full_cli_validated": false,
+  "hosted_workflows_executed": false,
+  "native_windows_macos_executed": false
+}

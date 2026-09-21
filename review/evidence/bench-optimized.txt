@@ -1,0 +1,47 @@
+goos: linux
+goarch: amd64
+pkg: zenith/core
+cpu: AMD EPYC 9V74 80-Core Processor                
+BenchmarkSystemMarshal/read_only_10-4         	47367828	         5.007 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10-4         	49445518	         4.997 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10-4         	45950188	         5.091 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10-4         	45366055	         5.036 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10-4         	47643199	         5.247 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_1000-4       	48909141	         5.226 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_1000-4       	44334879	         5.135 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_1000-4       	46302048	         5.136 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_1000-4       	48255474	         5.337 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_1000-4       	46933840	         5.047 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10000-4      	47694866	         5.118 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10000-4      	45932982	         5.289 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10000-4      	48739137	         5.238 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10000-4      	46929806	         5.004 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/read_only_10000-4      	43725961	         5.463 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSystemMarshal/write_then_read_1000-4 	     567	    413736 ns/op	  352025 B/op	    2007 allocs/op
+BenchmarkSystemMarshal/write_then_read_1000-4 	     570	    412378 ns/op	  356125 B/op	    2007 allocs/op
+BenchmarkSystemMarshal/write_then_read_1000-4 	     597	    401244 ns/op	  353782 B/op	    2007 allocs/op
+BenchmarkSystemMarshal/write_then_read_1000-4 	     530	    405297 ns/op	  349172 B/op	    2006 allocs/op
+BenchmarkSystemMarshal/write_then_read_1000-4 	     561	    405188 ns/op	  350716 B/op	    2006 allocs/op
+PASS
+ok  	zenith/core	5.586s
+goos: linux
+goarch: amd64
+pkg: zenith/server/handlers
+cpu: AMD EPYC 9V74 80-Core Processor                
+BenchmarkStatusAll/services_10-4         	  263624	       834.8 ns/op	    1776 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10-4         	  286131	       839.6 ns/op	    1776 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10-4         	  250293	       903.3 ns/op	    1776 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10-4         	  260613	       852.5 ns/op	    1776 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10-4         	  248880	       890.9 ns/op	    1776 B/op	      11 allocs/op
+BenchmarkStatusAll/services_1000-4       	   10000	     20882 ns/op	   82928 B/op	      11 allocs/op
+BenchmarkStatusAll/services_1000-4       	   14436	     19055 ns/op	   82928 B/op	      11 allocs/op
+BenchmarkStatusAll/services_1000-4       	   13741	     18355 ns/op	   82928 B/op	      11 allocs/op
+BenchmarkStatusAll/services_1000-4       	   15607	     13686 ns/op	   82928 B/op	      11 allocs/op
+BenchmarkStatusAll/services_1000-4       	   16430	     13324 ns/op	   82928 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10000-4      	    1143	    178943 ns/op	  771056 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10000-4      	    1791	    187398 ns/op	  771057 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10000-4      	    1148	    199837 ns/op	  771056 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10000-4      	    1029	    215509 ns/op	  771056 B/op	      11 allocs/op
+BenchmarkStatusAll/services_10000-4      	    1132	    188972 ns/op	  771056 B/op	      11 allocs/op
+PASS
+ok  	zenith/server/handlers	4.906s

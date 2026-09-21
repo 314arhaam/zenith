@@ -1,0 +1,10 @@
+PASS benchmarks.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS build.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS ci.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS e2e.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS release.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS send_telegram.yml: YAML parsed, local workflow references, dependency names, full-SHA action pins, bash syntax
+PASS workflow reuse, release quality gates, full E2E mode, six build targets
+PASS Dependabot YAML and Python E2E syntax
+PASS gofmt -l . returned no files
+LIMITATION: actionlint and hosted GitHub Actions execution were not run locally. YAML/bash validation is not a substitute.

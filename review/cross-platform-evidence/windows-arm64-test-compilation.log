@@ -1,0 +1,3 @@
+Cross-compile tests only, Windows arm64; not execution.
+Command: ['go', 'test', '-c', '-o', '/mnt/data/zenith_cross_platform/cross-tests/windows-arm64/', './core', './models', './server/...', './client/api', './tests/integration']
+Exit: 0

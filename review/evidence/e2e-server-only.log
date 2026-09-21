@@ -1,0 +1,22 @@
+PASS server readiness
+PASS empty registry and HEAD
+PASS lifecycle, special-character names and cache invalidation
+PASS malformed JSON, payload limits and query validation
+PASS routing and allowed methods
+PASS concurrent duplicate registration: one winner
+PASS 64 concurrent service lifecycles and unique IDs
+PASS server graceful SIGTERM shutdown
+{
+  "mode": "server-only",
+  "passed_groups": 8,
+  "cases": [
+    "server readiness",
+    "empty registry and HEAD",
+    "lifecycle, special-character names and cache invalidation",
+    "malformed JSON, payload limits and query validation",
+    "routing and allowed methods",
+    "concurrent duplicate registration: one winner",
+    "64 concurrent service lifecycles and unique IDs",
+    "server graceful SIGTERM shutdown"
+  ]
+}

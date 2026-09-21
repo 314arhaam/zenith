@@ -1,0 +1,2 @@
+go: downloading github.com/spf13/cobra v1.10.2
+client/cmd/add.go:3:8: module lookup disabled by GOPROXY=off

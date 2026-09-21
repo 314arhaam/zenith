@@ -1,40 +1,45 @@
-package core_test
+package core
 
 import (
+	"sync"
 	"testing"
-	"time"
-	"zenith/core"
 )
 
-func TestCreateService(t *testing.T) {
-	s0 := core.NewService()
-	t.Logf("[*] service created: %+v", s0)
-	time.Sleep(1 * time.Second)
-	s1 := core.NewCustomService(123, time.Now().Format(time.DateTime))
-	t.Logf("[*] service created: %+v", s1)
+func TestRegistrySnapshotAndDuplicate(t *testing.T) {
+	s := NewSystem()
+	first, created := s.Add("api")
+	if !created {
+		t.Fatal("first registration should succeed")
+	}
+	second, created := s.Add("api")
+	if created || second != first {
+		t.Fatalf("duplicate registration changed service: first=%+v second=%+v", first, second)
+	}
+	snapshot := s.GetAll()
+	delete(snapshot, "api")
+	if _, ok := s.Get("api"); !ok {
+		t.Fatal("mutating GetAll snapshot mutated registry")
+	}
 }
 
-func TestSystem(t *testing.T) {
-	system := core.NewSystem()
-	system.Add("new-test-service")
-	if system.Len() != 1 {
-		t.Fatalf("[x] Add() doesn't work: %d", system.Len())
+func TestRegistryConcurrentUse(t *testing.T) {
+	s := NewSystem()
+	var wg sync.WaitGroup
+	for worker := 0; worker < 16; worker++ {
+		wg.Add(1)
+		go func(worker int) {
+			defer wg.Done()
+			name := string(rune('a' + worker))
+			for i := 0; i < 100; i++ {
+				s.Add(name)
+				s.Get(name)
+				s.GetAll()
+				s.Len()
+				if i%5 == 0 {
+					s.Remove(name)
+				}
+			}
+		}(worker)
 	}
-	t.Logf("[*] %+v", system.GetAll())
-	if exists := system.Remove("new-test-service"); !exists {
-		t.Fatalf("[x] error in remove, service exists but remove returns false")
-	}
-	if system.Len() != 0 {
-		t.Fatalf("[x] Remove() doesn't work: %d", system.Len())
-	}
-	t.Logf("[*] %+v", system.GetAll())
-	if exists := system.Remove("new-non-existant-service"); exists {
-		t.Fatalf("[x] error in remove, service does not exist but remove returns true")
-	}
-	s0 := core.NewService()
-	system.Set("new-test-set", s0)
-	if system.Len() != 1 {
-		t.Fatalf("[x] Set() doesn't work: %d", system.Len())
-	}
-	t.Logf("[*] %+v", system.GetAll())
+	wg.Wait()
 }

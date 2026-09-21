@@ -1,0 +1,2 @@
+go: downloading github.com/spf13/cobra v1.10.2
+client/cmd/add.go:10:2: github.com/spf13/cobra@v1.10.2: Get "https://proxy.golang.org/github.com/spf13/cobra/@v/v1.10.2.zip": dial tcp: lookup proxy.golang.org on 168.63.129.16:53: read udp 172.26.39.203:51107->168.63.129.16:53: read: connection refused

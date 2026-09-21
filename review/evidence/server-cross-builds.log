@@ -1,0 +1,8 @@
+go version go1.23.2 linux/amd64
+Compile-only checks, not native execution on Windows/macOS. Local binaries are not release artifacts.
+PASS server build linux/amd64
+PASS server build windows/amd64
+PASS server build darwin/arm64
+PASS server build linux/arm64
+PASS server build windows/arm64
+PASS server build darwin/amd64

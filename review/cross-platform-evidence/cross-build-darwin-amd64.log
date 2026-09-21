@@ -1,0 +1,2 @@
+darwin/amd64: exit=0, elapsed=21.94s
+command: ['go', 'build', '-mod=readonly', '-trimpath', '-o', '/mnt/data/zenith_cross_platform/cross-bin/zenith-server-darwin-amd64', './server']

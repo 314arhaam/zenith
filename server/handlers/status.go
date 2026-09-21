@@ -1,40 +1,67 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"zenith/core"
+	data "zenith/models"
 )
 
-func (h *Handler) status(serviceName string) (map[string]core.Service, error) {
-	if serviceName != "" {
-		val, ok := h.Core.Get(serviceName)
-		if !ok {
-			return nil, fmt.Errorf("Service not found: %s", serviceName)
-		}
-		return map[string]core.Service{serviceName: val}, nil
-	} else {
-		val := h.Core.GetAll()
-		return val, nil
-	}
-}
-
 func (h *Handler) Status(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		methodNotAllowed(w, "GET, HEAD")
 		return
 	}
-	serviceName := r.URL.Query().Get("service")
+	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Type", "application/json")
-	val, err := h.status(serviceName)
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	query, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		writeError(w, http.StatusBadRequest, "invalid_query", "invalid query encoding")
+		return
+	}
+	if names, provided := query["service"]; provided {
+		if len(names) != 1 {
+			writeError(w, http.StatusBadRequest, "invalid_query", "provide service once")
+			return
+		}
+		name, valid := data.NormalizeServiceName(names[0])
+		if !valid {
+			writeError(w, http.StatusBadRequest, "invalid_query", "invalid service name")
+			return
+		}
+		service, ok := h.Core.Get(name)
+		if !ok {
+			if r.Method == http.MethodHead {
+				w.Header().Set("X-Zenith-Service-Count", "0")
+				w.WriteHeader(http.StatusNotFound)
+			} else {
+				writeError(w, http.StatusNotFound, "service_not_found", fmt.Sprintf("service not found: %s", name))
+			}
+			return
+		}
+		if r.Method == http.MethodHead {
+			w.Header().Set("X-Zenith-Service-Count", "1")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]core.Service{name: service})
+		return
+	}
+	if r.Method == http.MethodHead {
+		w.Header().Set("X-Zenith-Service-Count", strconv.Itoa(h.Core.Len()))
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	body, err := h.Core.Marshal()
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "encode_error", "cannot encode status")
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(val); err != nil {
-		http.Error(w, "Error in encoding", http.StatusInternalServerError)
-		return
-	}
+	_, _ = io.WriteString(w, body)
+	_, _ = io.WriteString(w, "\n")
 }

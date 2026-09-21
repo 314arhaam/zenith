@@ -1,0 +1,3 @@
++ /usr/local/go/bin/go version
+go version go1.23.2 linux/amd64
+Python 3.13.5; native Go target linux/amd64

@@ -1,0 +1,2 @@
+windows/arm64: exit=0, elapsed=23.95s
+command: ['go', 'build', '-mod=readonly', '-trimpath', '-o', '/mnt/data/zenith_cross_platform/cross-bin/zenith-server-windows-arm64.exe', './server']

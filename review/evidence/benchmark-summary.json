@@ -1,0 +1,100 @@
+{
+  "BenchmarkStatusAll/services_10": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 3809.0,
+      "bytes_per_op": 3337.0,
+      "allocs_per_op": 33.0
+    },
+    "optimized": {
+      "ns_per_op": 852.5,
+      "bytes_per_op": 1776.0,
+      "allocs_per_op": 11.0
+    },
+    "speedup": 4.4680351906158355
+  },
+  "BenchmarkStatusAll/services_1000": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 397596.0,
+      "bytes_per_op": 262725.0,
+      "allocs_per_op": 2014.0
+    },
+    "optimized": {
+      "ns_per_op": 18355.0,
+      "bytes_per_op": 82928.0,
+      "allocs_per_op": 11.0
+    },
+    "speedup": 21.661454644511032
+  },
+  "BenchmarkStatusAll/services_10000": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 6182862.0,
+      "bytes_per_op": 3138206.0,
+      "allocs_per_op": 20025.0
+    },
+    "optimized": {
+      "ns_per_op": 188972.0,
+      "bytes_per_op": 771056.0,
+      "allocs_per_op": 11.0
+    },
+    "speedup": 32.71840272632983
+  },
+  "BenchmarkSystemMarshal/read_only_10": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 3376.0,
+      "bytes_per_op": 3112.0,
+      "allocs_per_op": 25.0
+    },
+    "optimized": {
+      "ns_per_op": 5.036,
+      "bytes_per_op": 0.0,
+      "allocs_per_op": 0.0
+    },
+    "speedup": 670.3733121525021
+  },
+  "BenchmarkSystemMarshal/read_only_1000": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 414407.0,
+      "bytes_per_op": 351280.0,
+      "allocs_per_op": 2006.0
+    },
+    "optimized": {
+      "ns_per_op": 5.136,
+      "bytes_per_op": 0.0,
+      "allocs_per_op": 0.0
+    },
+    "speedup": 80686.72118380062
+  },
+  "BenchmarkSystemMarshal/read_only_10000": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 6666646.0,
+      "bytes_per_op": 3895141.0,
+      "allocs_per_op": 20018.0
+    },
+    "optimized": {
+      "ns_per_op": 5.238,
+      "bytes_per_op": 0.0,
+      "allocs_per_op": 0.0
+    },
+    "speedup": 1272746.468117602
+  },
+  "BenchmarkSystemMarshal/write_then_read_1000": {
+    "samples_each": 5,
+    "baseline": {
+      "ns_per_op": 397255.0,
+      "bytes_per_op": 352096.0,
+      "allocs_per_op": 2007.0
+    },
+    "optimized": {
+      "ns_per_op": 405297.0,
+      "bytes_per_op": 352025.0,
+      "allocs_per_op": 2007.0
+    },
+    "speedup": 0.9801577608519185
+  }
+}

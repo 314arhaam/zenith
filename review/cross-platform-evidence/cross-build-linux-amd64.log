@@ -1,0 +1,2 @@
+linux/amd64: exit=0, elapsed=0.55s
+command: ['go', 'build', '-mod=readonly', '-trimpath', '-o', '/mnt/data/zenith_cross_platform/cross-bin/zenith-server-linux-amd64', './server']

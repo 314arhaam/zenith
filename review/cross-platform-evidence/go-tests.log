@@ -1,0 +1,6 @@
+ok  	zenith/core	1.357s
+ok  	zenith/models	1.027s
+ok  	zenith/server	1.046s
+ok  	zenith/server/handlers	1.060s
+ok  	zenith/client/api	1.368s
+ok  	zenith/tests/integration	1.030s

@@ -1,0 +1,7 @@
+Local cross-build compiler: go version go1.23.2 linux/amd64
+linux/amd64: server build exists; executable OS/architecture header PASS; bytes=7930338
+linux/arm64: server build exists; executable OS/architecture header PASS; bytes=7682377
+windows/amd64: server build exists; executable OS/architecture header PASS; bytes=8006656
+windows/arm64: server build exists; executable OS/architecture header PASS; bytes=7531008
+darwin/amd64: server build exists; executable OS/architecture header PASS; bytes=7933968
+darwin/arm64: server build exists; executable OS/architecture header PASS; bytes=7646946

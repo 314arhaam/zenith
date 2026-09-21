@@ -1,63 +1,85 @@
-/*
-Copyright © 2026 314arhaam <prmbas@gmail.com>
-*/
 package cmd
 
 import (
 	"bytes"
+	"context"
+	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
+	"zenith/client/api"
+	data "zenith/models"
 
 	"github.com/spf13/cobra"
 )
 
-var baseURL string
+type options struct {
+	baseURL string
+	timeout time.Duration
+	client  *api.Client
+}
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "zenith-cli",
-	Short: "Communicate with zenith server easily",
-	Long:  ``,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+// NewRootCommand creates fresh flags, writers and options for each invocation.
+// Separate command trees can be executed concurrently; one tree is not shared.
+func NewRootCommand() *cobra.Command {
+	opts := &options{}
+	root := &cobra.Command{
+		Use: "zenith-client", Short: "Register, inspect and monitor Zenith services",
+		SilenceUsage: true, SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if opts.timeout <= 0 {
+				return fmt.Errorf("--timeout must be positive")
+			}
+			client, err := api.New(opts.baseURL, &http.Client{Timeout: opts.timeout, CheckRedirect: api.NoRedirect})
+			if err != nil {
+				return err
+			}
+			opts.client = client
+			return nil
+		},
+	}
+	root.PersistentFlags().StringVar(&opts.baseURL, "url", "http://127.0.0.1:8080", "Base URL for API")
+	root.PersistentFlags().DurationVar(&opts.timeout, "timeout", 10*time.Second, "Timeout per HTTP request, e.g. 500ms or 10s")
+	root.AddCommand(newAddCommand(opts), newRemoveCommand(opts), newStatusCommand(opts), newPingCommand(opts), newCheckCommand(opts))
+	return root
+}
+
+func serviceArg(args []string) (string, error) {
+	if len(args) == 0 {
+		return "", nil
+	}
+	name, ok := data.NormalizeServiceName(args[0])
+	if !ok {
+		return "", fmt.Errorf("invalid service name: use 1-256 UTF-8 bytes without control characters")
+	}
+	return name, nil
 }
 
 func ExecuteWithArgs(args []string) (string, error) {
-	buf := new(bytes.Buffer)
-	rootCmd.SetOut(buf)
-	rootCmd.SetErr(buf)
-	rootCmd.SetArgs(args)
-	err := rootCmd.Execute()
-	if err != nil {
-		return "", err
-		// os.Exit(1)
-	}
-	return buf.String(), nil
+	return ExecuteWithContext(context.Background(), args)
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+func ExecuteWithContext(ctx context.Context, args []string) (string, error) {
+	var out bytes.Buffer
+	root := NewRootCommand()
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetArgs(args)
+	err := root.ExecuteContext(ctx)
+	return out.String(), err
+}
+
 func Execute() {
-	err := rootCmd.Execute()
+	// os.Interrupt handles Ctrl+C on every OS and Ctrl+Break on Windows.
+	// Windows close/logoff SIGTERM permits cleanup but cannot guarantee its duration.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	root := NewRootCommand()
+	err := root.ExecuteContext(ctx)
+	stop()
 	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-}
-
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.client.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().StringVar(
-		&baseURL,
-		"url",
-		"http://0.0.0.0:8080",
-		"Base URL for API",
-	)
 }

@@ -5,29 +5,18 @@ import (
 	data "zenith/models"
 )
 
-func (h *Handler) remove(serviceName string) bool {
-	return h.Core.Remove(serviceName)
-}
-
 func (h *Handler) Remove(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
-		http.Error(w, "Use DELETE method", http.StatusMethodNotAllowed)
+		methodNotAllowed(w, "DELETE")
 		return
 	}
-	defer r.Body.Close()
-	var rs data.RemoveRequest
-	if err := data.Decode(&rs, r.Body); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	var request data.RemoveRequest
+	if !decodeRequest(w, r, &request) {
 		return
 	}
-	if ok := rs.Validate(); !ok {
-		http.Error(w, "No Data Provided", http.StatusBadRequest)
+	if !h.Core.Remove(request.ServiceName) {
+		writeError(w, http.StatusNotFound, "service_not_found", "service not found")
 		return
 	}
-	if ok := h.remove(rs.ServiceName); !ok {
-		http.Error(w, "Element not found", http.StatusNotFound)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }

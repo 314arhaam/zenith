@@ -1,0 +1,31 @@
++ /opt/pyvenv/bin/python3 -m unittest discover -s scripts/tests -v
+test_methods_and_validation (test_portability.APITests.test_methods_and_validation) ... ok
+test_unicode_names_and_base_path (test_portability.APITests.test_unicode_names_and_base_path) ... ok
+test_all_six_targets_and_extensions (test_portability.DeveloperTests.test_all_six_targets_and_extensions) ... ok
+test_build_environment_is_explicit_and_not_mutated (test_portability.DeveloperTests.test_build_environment_is_explicit_and_not_mutated) ... ok
+test_paths_are_relative_to_repository_not_cwd (test_portability.DeveloperTests.test_paths_are_relative_to_repository_not_cwd) ... ok
+test_process_options_are_native (test_portability.DeveloperTests.test_process_options_are_native) ... ok
+test_race_does_not_silently_skip_unsupported_target (test_portability.DeveloperTests.test_race_does_not_silently_skip_unsupported_target) ... ok
+test_subprocess_failure_is_propagated_and_logged (test_portability.DeveloperTests.test_subprocess_failure_is_propagated_and_logged) ... ok
+test_unicode_and_space_arguments_are_not_shell_interpreted (test_portability.DeveloperTests.test_unicode_and_space_arguments_are_not_shell_interpreted) ... ok
+test_windows_control_branch_is_explicit (test_portability.DeveloperTests.test_windows_control_branch_is_explicit) ... ok
+test_all_target_packages_checksums_headers_and_modes (test_portability.PackagingTests.test_all_target_packages_checksums_headers_and_modes) ... ok
+test_bundles_are_deterministic_for_identical_inputs (test_portability.PackagingTests.test_bundles_are_deterministic_for_identical_inputs) ... ok
+test_checksum_duplicate_traversal_and_wrong_set_rejected (test_portability.PackagingTests.test_checksum_duplicate_traversal_and_wrong_set_rejected) ... ok
+test_existing_extraction_destination_rejected (test_portability.PackagingTests.test_existing_extraction_destination_rejected) ... ok
+test_tampered_asset_fails (test_portability.PackagingTests.test_tampered_asset_fails) ... ok
+test_wrong_binary_architecture_rejected (test_portability.PackagingTests.test_wrong_binary_architecture_rejected) ... ok
+test_empty_query_and_fragment_in_base_url_rejected (test_publish.HTTPHelperInputTests.test_empty_query_and_fragment_in_base_url_rejected) ... ok
+test_nonfinite_timeouts_rejected_before_request (test_publish.HTTPHelperInputTests.test_nonfinite_timeouts_rejected_before_request) ... ok
+test_existing_draft_receives_assets_before_publication (test_publish.PublishTests.test_existing_draft_receives_assets_before_publication) ... ok
+test_failed_upload_does_not_publish (test_publish.PublishTests.test_failed_upload_does_not_publish) ... ok
+test_invalid_tag_fails_before_any_remote_command (test_publish.PublishTests.test_invalid_tag_fails_before_any_remote_command) ... ok
+test_mismatched_asset_fails_before_any_remote_command (test_publish.PublishTests.test_mismatched_asset_fails_before_any_remote_command) ... ok
+test_missing_repository_fails_before_any_remote_command (test_publish.PublishTests.test_missing_repository_fails_before_any_remote_command) ... ok
+test_new_release_stays_draft_until_upload_completes (test_publish.PublishTests.test_new_release_stays_draft_until_upload_completes) ... ok
+test_public_release_is_never_overwritten (test_publish.PublishTests.test_public_release_is_never_overwritten) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 3.295s
+
+OK
