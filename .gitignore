@@ -33,3 +33,19 @@ go.work.sum
 
 # custom
 *.pdf
+# Local test and benchmark output
+dist/
+artifacts/
+coverage*.out
+test-results.json
+benchmarks.txt
+__pycache__/
+
+# Native executables built manually at the repository root
+/zenith-server
+/zenith-client
+/zenith_server
+/zenith_client
+/zenith-release/
+.DS_Store
+Thumbs.db

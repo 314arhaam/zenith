@@ -1,0 +1,55 @@
+go version go1.23.2 linux/amd64
+$ go vet ./core ./models ./server/... ./client/api ./tests/integration
+$ go test -race -shuffle=on -count=1 -timeout=3m -coverprofile=coverage-local.out ./core ./models ./server/... ./client/api ./tests/integration
+ok  	zenith/core	1.257s	coverage: 98.5% of statements
+ok  	zenith/models	1.014s	coverage: 96.6% of statements
+ok  	zenith/server	1.043s	coverage: 57.5% of statements
+ok  	zenith/server/handlers	1.023s	coverage: 95.3% of statements
+ok  	zenith/client/api	1.253s	coverage: 87.8% of statements
+ok  	zenith/tests/integration	1.020s	coverage: 100.0% of statements
+$ go tool cover -func=coverage-local.out
+zenith/client/api/client.go:35:			Error			0.0%
+zenith/client/api/client.go:39:			New			100.0%
+zenith/client/api/client.go:54:			NoRedirect		100.0%
+zenith/client/api/client.go:56:			do			88.5%
+zenith/client/api/client.go:95:			requireStatus		81.8%
+zenith/client/api/client.go:113:		nameQuery		100.0%
+zenith/client/api/client.go:124:		Ping			87.5%
+zenith/client/api/client.go:138:		Add			83.3%
+zenith/client/api/client.go:157:		Remove			85.7%
+zenith/client/api/client.go:171:		Status			95.2%
+zenith/client/api/client.go:206:		Present			78.6%
+zenith/core/servicedata.go:30:			init			100.0%
+zenith/core/servicedata.go:32:			NewCustomService	100.0%
+zenith/core/servicedata.go:37:			NewService		100.0%
+zenith/core/servicedata.go:41:			NewSystem		100.0%
+zenith/core/servicedata.go:43:			Get			100.0%
+zenith/core/servicedata.go:50:			Set			100.0%
+zenith/core/servicedata.go:61:			prepareWrite		100.0%
+zenith/core/servicedata.go:70:			Add			100.0%
+zenith/core/servicedata.go:82:			Len			100.0%
+zenith/core/servicedata.go:91:			Marshal			95.8%
+zenith/core/servicedata.go:126:			snapshotLocked		100.0%
+zenith/core/servicedata.go:135:			GetAll			100.0%
+zenith/core/servicedata.go:141:			Remove			100.0%
+zenith/models/add_request.go:7:			Validate		100.0%
+zenith/models/name.go:13:			NormalizeServiceName	100.0%
+zenith/models/remove_request.go:7:		Validate		100.0%
+zenith/models/request.go:13:			Decode			100.0%
+zenith/models/request.go:29:			ToJson			75.0%
+zenith/server/handlers/add.go:8:		Add			100.0%
+zenith/server/handlers/handler.go:18:		NewHandler		100.0%
+zenith/server/handlers/handler.go:21:		Routes			100.0%
+zenith/server/handlers/handler.go:33:		writeJSON		100.0%
+zenith/server/handlers/handler.go:43:		writeError		100.0%
+zenith/server/handlers/handler.go:47:		methodNotAllowed	100.0%
+zenith/server/handlers/handler.go:52:		decodeRequest		100.0%
+zenith/server/handlers/ping.go:5:		Ping			88.9%
+zenith/server/handlers/remove.go:8:		Remove			80.0%
+zenith/server/handlers/status.go:13:		Status			95.2%
+zenith/server/main.go:18:			resolvePort		100.0%
+zenith/server/main.go:32:			newHTTPServer		100.0%
+zenith/server/main.go:42:			serve			77.8%
+zenith/server/main.go:69:			main			0.0%
+zenith/tests/integration/intg_utils.go:8:	NewTestServer		100.0%
+total:						(statements)		89.4%

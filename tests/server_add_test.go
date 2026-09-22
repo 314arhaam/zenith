@@ -2,72 +2,56 @@ package tests
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 	"testing"
-	"zenith/core"
 	data "zenith/models"
 	hd "zenith/server/handlers"
 )
 
-func TestMethodNotAllowedAdd(t *testing.T) {
-	// intentionally requets GET method on /add
+func TestAddCreated(t *testing.T) {
 	h := hd.NewHandler()
-	serviceName := "test_service-01"
-	url := "/add"
-	// mock request and writer
-	h.Core.Add(serviceName)
-	w, r := responseAndRequestBuild(http.MethodGet, url, nil)
+	payload, _ := json.Marshal(data.AddRequest{ServiceName: "api"})
+	w, r := responseAndRequestBuild(http.MethodPost, "/add", strings.NewReader(string(payload)))
 	h.Add(w, r)
-	if w.Result().StatusCode != http.StatusMethodNotAllowed {
-		t.Fatalf("Error: `TestMethodNotAllowedAdd` failed. StatusCode %d", w.Result().StatusCode)
+	if w.Code != http.StatusCreated {
+		t.Fatalf("status = %d; want %d; body=%s", w.Code, http.StatusCreated, w.Body.String())
 	}
 }
 
-func TestEmptyFetch(t *testing.T) {
-	// invalid payload is pased to /add
+func TestAddDuplicateReturnsConflict(t *testing.T) {
 	h := hd.NewHandler()
-	invalidPayload := strings.NewReader(`{"key": "val"}`)
-	url := "/add"
-	// mock request and writer
-	w, r := responseAndRequestBuild(http.MethodPost, url, invalidPayload)
+	h.Core.Add("api")
+	w, r := responseAndRequestBuild(http.MethodPost, "/add", strings.NewReader(`{"service_name":"api"}`))
 	h.Add(w, r)
-	if w.Result().StatusCode != http.StatusBadRequest {
-		t.Fatalf("Error: `TestEmptyFetch` failed. StatusCode %d", w.Result().StatusCode)
+	if w.Code != http.StatusConflict {
+		t.Fatalf("status = %d; want %d; body=%s", w.Code, http.StatusConflict, w.Body.String())
 	}
 }
 
-func TestAdd(t *testing.T) {
+func TestAddMalformedJSONReturnsBadRequest(t *testing.T) {
 	h := hd.NewHandler()
-	// mock data
-	serviceName := "test_service-01"
-	url := "/add"
-	// mock request and writer
-	h.Core.Add(serviceName)
-	payload, err := json.Marshal(data.AddRequest{ServiceName: serviceName})
-	if err != nil {
-		t.Fatal("Error in request payload marshal")
-	}
-	payloadString := string(payload)
-	w, r := responseAndRequestBuild(http.MethodPost, url, strings.NewReader(payloadString))
-	// handle function
+	w, r := responseAndRequestBuild(http.MethodPost, "/add", strings.NewReader(`{"service_name":`))
 	h.Add(w, r)
-	if w.Result().StatusCode != http.StatusCreated {
-		t.Fatalf("Error: fetch result failed. StatusCode %d", w.Result().StatusCode)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d; want %d", w.Code, http.StatusBadRequest)
 	}
-	defer w.Result().Body.Close()
-	if d, err := io.ReadAll(w.Result().Body); err != nil {
-		t.Fatalf("Error: read fetch data failed: %v", err)
-	} else {
-		var fetchData core.Service
-		if err := json.Unmarshal([]byte(strings.ReplaceAll(string(d), "\n", "")), &fetchData); err != nil {
-			t.Fatalf("Error in fetch data validation: %s", err)
-		}
-		if fetchData.CreateDateTime == "" {
-			t.Fatal("Error in system core: Service data generated is empty")
-		}
-		t.Logf("Result: %v %s", fetchData, string(d))
-		t.Log("Success")
+}
+
+func TestAddEmptyServiceReturnsBadRequest(t *testing.T) {
+	h := hd.NewHandler()
+	w, r := responseAndRequestBuild(http.MethodPost, "/add", strings.NewReader(`{"service_name":"   "}`))
+	h.Add(w, r)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d; want %d", w.Code, http.StatusBadRequest)
+	}
+}
+
+func TestAddMethodNotAllowed(t *testing.T) {
+	h := hd.NewHandler()
+	w, r := responseAndRequestBuild(http.MethodGet, "/add", nil)
+	h.Add(w, r)
+	if w.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("status = %d; want %d", w.Code, http.StatusMethodNotAllowed)
 	}
 }

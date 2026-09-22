@@ -1,0 +1,9 @@
+# Prevent core.autocrlf from breaking shell scripts or gofmt checks on Windows.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.exe binary
+*.zip binary
+*.gz binary
+*.png binary

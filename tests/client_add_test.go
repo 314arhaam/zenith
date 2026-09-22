@@ -1,83 +1,52 @@
 package tests
 
 import (
+	"strings"
 	"testing"
 	"zenith/client/cmd"
 	"zenith/tests/integration"
 )
 
-func TestSubcommandAdd(t *testing.T) {
-	var out string
-	var err error
-	mockServiceName := "cli_test_service_123"
-	serviceToRemove := "service_to_remove"
+func TestClientLifecycle(t *testing.T) {
 	server := integration.NewTestServer()
 	defer server.Close()
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "add", mockServiceName})
+
+	out, err := cmd.ExecuteWithArgs([]string{"--url", server.URL, "add", "api"})
 	if err != nil {
-		t.Fatal(err, out)
+		t.Fatalf("add failed: %v; output=%s", err, out)
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status"})
+	if !strings.Contains(out, "service_id") {
+		t.Fatalf("add output missing service data: %s", out)
+	}
+
+	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status", "api"})
 	if err != nil {
-		t.Fatal(err, out)
+		t.Fatalf("status failed: %v; output=%s", err, out)
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status", mockServiceName})
-	if err != nil {
-		t.Fatal(err, out)
+	if !strings.Contains(out, `"api"`) {
+		t.Fatalf("status output missing api: %s", out)
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "add", serviceToRemove})
-	if err != nil {
-		t.Fatal(err, out)
+
+	if _, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "add", "api"}); err == nil {
+		t.Fatal("duplicate add should return an error")
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status"})
-	if err != nil {
-		t.Fatal(err, out)
+
+	if _, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "remove", "api"}); err != nil {
+		t.Fatalf("remove failed: %v", err)
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "remove", serviceToRemove})
-	if err != nil {
-		t.Fatal(err, out)
+	if _, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status", "api"}); err == nil {
+		t.Fatal("status for removed service should return an error")
 	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status"})
-	if err != nil {
-		t.Fatal(err, out)
-	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "status", serviceToRemove})
-	if err != nil {
-		t.Fatal(err, out)
-	}
-	t.Log(string(out))
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "ping"})
-	if err != nil {
-		t.Fatal(err, out)
-	}
-	t.Logf("%s\n", string(out))
 }
 
-func TestRemoveError(t *testing.T) {
-	var out string
-	var err error
-	serviceToRemove := "service_to_remove"
+func TestClientPing(t *testing.T) {
 	server := integration.NewTestServer()
 	defer server.Close()
-	//
-	out, err = cmd.ExecuteWithArgs([]string{"--url", server.URL, "remove", serviceToRemove})
-	if err == nil {
-		t.Fatalf("must return 404 error: %s | %s", err, out)
+	out, err := cmd.ExecuteWithArgs([]string{"--url", server.URL, "ping"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out != "Pong\n" {
+		t.Fatalf("ping output = %q; want Pong\\n", out)
 	}
 }

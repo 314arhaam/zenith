@@ -1,0 +1,198 @@
+[
+  {
+    "path": ".github/dependabot.yml",
+    "change": "added"
+  },
+  {
+    "path": ".github/workflows/benchmarks.yml",
+    "change": "added"
+  },
+  {
+    "path": ".github/workflows/build.yml",
+    "change": "modified"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "change": "modified"
+  },
+  {
+    "path": ".github/workflows/e2e.yml",
+    "change": "modified"
+  },
+  {
+    "path": ".github/workflows/release.yml",
+    "change": "modified"
+  },
+  {
+    "path": ".github/workflows/send_telegram.yml",
+    "change": "modified"
+  },
+  {
+    "path": ".gitignore",
+    "change": "modified"
+  },
+  {
+    "path": ".go-version",
+    "change": "added"
+  },
+  {
+    "path": "Makefile",
+    "change": "modified"
+  },
+  {
+    "path": "README.md",
+    "change": "modified"
+  },
+  {
+    "path": "client/api/client.go",
+    "change": "added"
+  },
+  {
+    "path": "client/api/client_test.go",
+    "change": "added"
+  },
+  {
+    "path": "client/cmd/add.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/check.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/commands_test.go",
+    "change": "added"
+  },
+  {
+    "path": "client/cmd/http.go",
+    "change": "removed"
+  },
+  {
+    "path": "client/cmd/ping.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/remove.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/root.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/status.go",
+    "change": "modified"
+  },
+  {
+    "path": "client/cmd/wait.go",
+    "change": "added"
+  },
+  {
+    "path": "client/main.go",
+    "change": "modified"
+  },
+  {
+    "path": "core/optimization_test.go",
+    "change": "added"
+  },
+  {
+    "path": "core/servicedata.go",
+    "change": "modified"
+  },
+  {
+    "path": "core/servicedata_bench_test.go",
+    "change": "added"
+  },
+  {
+    "path": "env.template",
+    "change": "modified"
+  },
+  {
+    "path": "go.mod",
+    "change": "modified"
+  },
+  {
+    "path": "models/add_request.go",
+    "change": "modified"
+  },
+  {
+    "path": "models/name.go",
+    "change": "added"
+  },
+  {
+    "path": "models/remove_request.go",
+    "change": "modified"
+  },
+  {
+    "path": "models/request.go",
+    "change": "modified"
+  },
+  {
+    "path": "models/status_response.go",
+    "change": "removed"
+  },
+  {
+    "path": "models/validation_test.go",
+    "change": "added"
+  },
+  {
+    "path": "scripts/add.sh",
+    "change": "modified"
+  },
+  {
+    "path": "scripts/e2e.py",
+    "change": "added"
+  },
+  {
+    "path": "scripts/remove.sh",
+    "change": "modified"
+  },
+  {
+    "path": "scripts/status.sh",
+    "change": "modified"
+  },
+  {
+    "path": "scripts/status_single.sh",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/add.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/handler.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/optimization_test.go",
+    "change": "added"
+  },
+  {
+    "path": "server/handlers/ping.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/remove.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/status.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/handlers/status_bench_test.go",
+    "change": "added"
+  },
+  {
+    "path": "server/main.go",
+    "change": "modified"
+  },
+  {
+    "path": "server/shutdown_test.go",
+    "change": "added"
+  },
+  {
+    "path": "tests/integration/intg_utils.go",
+    "change": "modified"
+  }
+]

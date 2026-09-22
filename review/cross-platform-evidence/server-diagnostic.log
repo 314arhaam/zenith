@@ -1,0 +1,16 @@
+=== RUN   TestResolvePortDefault
+--- PASS: TestResolvePortDefault (0.00s)
+=== RUN   TestResolvePortExplicit
+--- PASS: TestResolvePortExplicit (0.00s)
+=== RUN   TestResolvePortInvalid
+--- PASS: TestResolvePortInvalid (0.00s)
+=== RUN   TestResolvePortRejectsExtraArguments
+--- PASS: TestResolvePortRejectsExtraArguments (0.00s)
+=== RUN   TestServerTimeouts
+--- PASS: TestServerTimeouts (0.00s)
+=== RUN   TestGracefulShutdownWaitsForActiveRequest
+--- PASS: TestGracefulShutdownWaitsForActiveRequest (0.00s)
+=== RUN   TestShutdownDeadlineClosesConnections
+--- PASS: TestShutdownDeadlineClosesConnections (0.02s)
+PASS
+ok  	zenith/server	1.040s

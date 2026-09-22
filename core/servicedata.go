@@ -3,8 +3,8 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -13,32 +13,36 @@ type Service struct {
 	CreateDateTime string `json:"create_datetime"`
 }
 
+// System is an in-memory registry. Its zero value is ready to use.
+// A System must not be copied after first use. Prefer NewSystem.
 type System struct {
-	data map[string]Service
-	mu   sync.Mutex
+	mu         sync.RWMutex
+	data       map[string]Service
+	version    uint64
+	cachedJSON string
+	// Serialize cache fills, not ordinary registry reads/writes. Encoding and
+	// network writes never hold mu, so slow clients cannot block registration.
+	marshalMu sync.Mutex
 }
 
-func NewCustomService(serviceId uint64, dt string) Service {
-	return Service{
-		ServiceID:      serviceId,
-		CreateDateTime: dt,
-	}
+var nextServiceID atomic.Uint64
+
+func init() { nextServiceID.Store(uint64(time.Now().UnixNano())) }
+
+func NewCustomService(serviceID uint64, dt string) Service {
+	return Service{ServiceID: serviceID, CreateDateTime: dt}
 }
 
+// NewService returns a process-local identifier, not a durable/distributed ID.
 func NewService() Service {
-	return Service{
-		ServiceID:      uint64(rand.Intn(1000)),
-		CreateDateTime: time.Now().Format(time.DateTime),
-	}
+	return Service{ServiceID: nextServiceID.Add(1), CreateDateTime: time.Now().UTC().Format(time.RFC3339Nano)}
 }
 
-func NewSystem() System {
-	return System{data: make(map[string]Service)}
-}
+func NewSystem() *System { return &System{data: make(map[string]Service)} }
 
 func (s *System) Get(key string) (Service, bool) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	val, ok := s.data[key]
 	return val, ok
 }
@@ -46,40 +50,101 @@ func (s *System) Get(key string) (Service, bool) {
 func (s *System) Set(key string, val Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if old, ok := s.data[key]; ok && old == val {
+		return
+	}
+	s.prepareWrite()
 	s.data[key] = val
 }
 
-func (s *System) Add(serviceName string) {
-	data := NewService()
-	s.Set(serviceName, data)
+// prepareWrite must be called with mu exclusively locked.
+func (s *System) prepareWrite() {
+	if s.data == nil {
+		s.data = make(map[string]Service)
+	}
+	s.version++
+	s.cachedJSON = ""
+}
+
+// Add atomically registers a service; duplicate names preserve the original.
+func (s *System) Add(serviceName string) (Service, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if existing, ok := s.data[serviceName]; ok {
+		return existing, false
+	}
+	service := NewService()
+	s.prepareWrite()
+	s.data[serviceName] = service
+	return service, true
 }
 
 func (s *System) Len() int {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return len(s.data)
 }
 
+// Marshal returns an immutable JSON snapshot. Repeated reads without mutations
+// reuse the encoding. A cold read is O(n log n) (JSON sorts map keys); a warm
+// read is O(1). Sending the resulting bytes still costs O(response size).
 func (s *System) Marshal() (string, error) {
-	dm, err := json.Marshal(s.data)
-	if err != nil {
-		return "", fmt.Errorf("Error in Marshal `System` instance")
+	s.mu.RLock()
+	cached := s.cachedJSON
+	s.mu.RUnlock()
+	if cached != "" {
+		return cached, nil
 	}
-	return string(dm), nil
+
+	s.marshalMu.Lock()
+	defer s.marshalMu.Unlock()
+	s.mu.RLock()
+	if s.cachedJSON != "" {
+		cached = s.cachedJSON
+		s.mu.RUnlock()
+		return cached, nil
+	}
+	version := s.version
+	snapshot := s.snapshotLocked()
+	s.mu.RUnlock()
+
+	encoded, err := json.Marshal(snapshot)
+	if err != nil {
+		return "", fmt.Errorf("marshal system: %w", err)
+	}
+	result := string(encoded)
+	s.mu.Lock()
+	// A concurrent write may have happened during encoding. Return the coherent
+	// snapshot we read, but never publish it as the cache for the newer version.
+	if s.version == version {
+		s.cachedJSON = result
+	}
+	s.mu.Unlock()
+	return result, nil
 }
 
+func (s *System) snapshotLocked() map[string]Service {
+	out := make(map[string]Service, len(s.data))
+	for key, value := range s.data {
+		out[key] = value
+	}
+	return out
+}
+
+// GetAll returns a caller-owned snapshot, not the registry's mutable map.
 func (s *System) GetAll() map[string]Service {
-	return s.data
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.snapshotLocked()
 }
 
 func (s *System) Remove(serviceName string) bool {
-	if _, ok := s.Get(serviceName); !ok {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.data[serviceName]; !ok {
 		return false
 	}
-	s.mu.Lock()
-	for k := range s.data {
-		if k == serviceName {
-			delete(s.data, k)
-		}
-	}
-	s.mu.Unlock()
+	s.prepareWrite()
+	delete(s.data, serviceName)
 	return true
 }

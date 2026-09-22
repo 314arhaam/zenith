@@ -1,0 +1,14 @@
+{
+  "mode": "server-only",
+  "passed_groups": 8,
+  "cases": [
+    "server readiness",
+    "empty registry and HEAD",
+    "lifecycle, special-character names and cache invalidation",
+    "malformed JSON, payload limits and query validation",
+    "routing and allowed methods",
+    "concurrent duplicate registration: one winner",
+    "64 concurrent service lifecycles and unique IDs",
+    "server graceful SIGTERM shutdown"
+  ]
+}

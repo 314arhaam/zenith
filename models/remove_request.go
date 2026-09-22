@@ -5,8 +5,9 @@ type RemoveRequest struct {
 }
 
 func (r *RemoveRequest) Validate() bool {
-	if r.ServiceName == "" {
-		return false
+	name, ok := NormalizeServiceName(r.ServiceName)
+	if ok {
+		r.ServiceName = name
 	}
-	return true
+	return ok
 }

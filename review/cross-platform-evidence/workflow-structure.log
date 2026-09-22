@@ -1,0 +1,11 @@
+PASS YAML parse, declared needs, local references and full action pins: release.yml
+PASS YAML parse, declared needs, local references and full action pins: build.yml
+PASS YAML parse, declared needs, local references and full action pins: e2e.yml
+PASS YAML parse, declared needs, local references and full action pins: ci.yml
+PASS YAML parse, declared needs, local references and full action pins: send_telegram.yml
+PASS YAML parse, declared needs, local references and full action pins: benchmarks.yml
+PASS six native targets, architecture and race matrix: ci.yml
+PASS six native targets, architecture and race matrix: e2e.yml
+PASS six native targets, architecture and race matrix: benchmarks.yml
+PASS build matrix, native packaged E2E, publication gates, no post-test rebuild
+NOTE: This is structural validation with PyYAML, not actionlint or a hosted GitHub run.

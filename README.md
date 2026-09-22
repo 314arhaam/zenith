@@ -1,238 +1,95 @@
 # Zenith
 
-[![CI](https://github.com/314arhaam/zenith/actions/workflows/ci.yml/badge.svg)](https://github.com/314arhaam/zenith/actions/workflows/ci.yml)
-[![E2E Test](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/314arhaam/zenith/actions/workflows/e2e.yml)
+Zenith is a small Go HTTP service registry with a Cobra command-line client. It tracks named registrations for applications, developers and CI runners on a trusted network.
 
-> A lightweight service registry consisting of a Go REST API server and a Cobra-powered CLI client. To keep Github Actions VMs up in a controlled manner, to deploy platforms.
-
-Zenith is a small distributed service management project written in Go. It consists of two independent applications:
-
-* **Zenith Server** — exposes a REST API for managing services.
-* **Zenith CLI** — a Cobra-based command-line application for interacting with the server.
-
-The project demonstrates:
-
-* REST API development in Go
-* Cobra CLI application design
-* End-to-end testing with GitHub Actions
-* Multi-runner integration testing
-* Tailscale-based networking between CI runners
-
----
-
-# Architecture
-
-```
-                   +----------------------+
-                   |    Zenith CLI        |
-                   |   (Cobra Client)     |
-                   +----------+-----------+
-                              |
-                         HTTP REST API
-                              |
-                              v
-                   +----------------------+
-                   |    Zenith Server     |
-                   |    Service Registry  |
-                   +----------------------+
+```text
+zenith-client -> HTTP API -> in-memory registry
 ```
 
----
+**Windows, Linux and macOS; amd64 and arm64.** Both applications are native console executables. A registration contains a name, process-local numeric ID and creation timestamp. Registering/removing a service does not start/stop its application. Zenith tracks membership, not application health.
 
-# Features
+## Documentation
 
-## Server
+- [Quick reference](docs/QUICK_REFERENCE.md): introduction, setup on all three OSes, endpoints, request/response shapes, CLI commands and flags.
+- [Platform and automation guide](docs/PLATFORMS.md): build/test tools, release archives, runner matrix, signals, prerequisites and workflows.
+- [Cross-platform validation report](review/CROSS_PLATFORM_REVIEW.md): what was actually checked locally and what still requires hosted/native validation.
+- [Previous optimization report](review/OPTIMIZATION_REVIEW.md): historical cache benchmarks and prior validation scope, not a result for the current revision.
 
-* REST API
-* Register services
-* Remove services
-* Query service status
-* Health endpoint
-* In-memory service registry
-* Thread-safe data access
+## Build and start
 
-## Client
+Install Go as specified by `.go-version` and download module dependencies. Python 3.10+ is only needed for the developer helpers/E2E, not to run release binaries.
 
-* Built with Cobra
-* Simple command structure
-* Supports remote servers through `--url`
-* Continuous health checking
-* Continuous service monitoring
+Windows PowerShell:
 
----
-
-# Project Structure
-
-```
-.
-├── client/
-│   ├── cmd/
-│   └── main.go
-│
-├── server/
-│   └── main.go
-│
-├── handlers/
-├── models/
-├── tests/
-└── go.mod
+```powershell
+go mod download
+py -3 scripts/dev.py build
+$env:ZENITH_HOST = "127.0.0.1"
+.\dist\zenith-server.exe 8080
+# In a second terminal:
+.\dist\zenith-client.exe add api
+.\dist\zenith-client.exe status api
+.\dist\zenith-client.exe remove api
 ```
 
----
+Linux/macOS:
 
-# Building
-
-## Server
-
-```bash
-go build -o zenith_server server/main.go
+```sh
+go mod download
+python3 scripts/dev.py build
+ZENITH_HOST=127.0.0.1 ./dist/zenith-server 8080
+# In a second terminal:
+./dist/zenith-client add api
+./dist/zenith-client status api
+./dist/zenith-client remove api
 ```
 
-## Client
+No Python? Run `go build -trimpath -o zenith-server ./server` and `go build -trimpath -o zenith-client ./client`, adding `.exe` to output filenames on Windows. Direct builds write to the current directory.
 
-```bash
-go build -o zenith_client client/main.go
+The port is optional (default 8080). `ZENITH_HOST` is optional; unset means all interfaces. For remote use, bind a reachable private interface and pass `--url http://SERVER:8080` to the client. Apply access controls before exposing the listener.
+
+## HTTP API and CLI
+
+| API | CLI equivalent | Purpose |
+| --- | --- | --- |
+| `POST /add` | `add SERVICE` | Register a name; duplicates fail with 409. |
+| `DELETE /remove` | `remove SERVICE` | Remove a registration. |
+| `GET /status[?service=NAME]` | `status [SERVICE]` | Read one/all registrations. |
+| `GET /ping` | `ping [--until SECONDS]` | Check Zenith, optionally retrying. |
+| Repeated `GET /status` | `check [SERVICE]` | Monitor registration until absence/error/cancellation. |
+| `HEAD /status[?service=NAME]` | `check [SERVICE] --quiet` | Body-free membership polling. |
+
+Add/remove request: `{"service_name":"api"}`. JSON error schema: `{"error":"CODE","message":"DETAIL"}`. Full status returns objects keyed by service name. `HEAD /ping` is also supported. All formats, flags, limits and status codes are in the quick reference.
+
+The CLI's global defaults are `--url http://127.0.0.1:8080` and `--timeout 10s`. Use `help [COMMAND]`, `COMMAND --help`, or `completion bash|zsh|fish|powershell`. Shell completion is printed, not installed automatically.
+
+## Portable development
+
+```sh
+# On Windows replace python3 with py -3.
+python3 scripts/dev.py verify
+python3 scripts/dev.py test --race    # supported platforms/C compiler required
+python3 scripts/dev.py dist --all
 ```
 
----
+`verify` performs module checks, formatting, vet, helper tests, Go tests, builds and real server/CLI E2E. Windows arm64 supports the ordinary tests but not Go's race detector. See the platform guide for C-compiler requirements. The optional Makefile and shell/PowerShell wrappers delegate to the same Python entrypoint.
 
-# Running
+Release builds create 12 raw binaries, six Windows ZIP/Unix tar.gz bundles, and checksums. Existing raw artifact names are retained; extracted bundles use `zenith-server` and `zenith-client` (with `.exe` on Windows). Packaging checks the binary OS/architecture and executable permissions.
 
-Start the server:
+## Workflows
 
-```bash
-./zenith_server 8080
-```
+CI runs native unit/integration tests on all six targets. E2E calls the reusable build workflow, then tests the exact packaged server and CLI on each target's native runner. Releases on `v*` tags are gated on both CI and E2E; no separate rebuild happens after those checks. Manual multi-platform benchmarks and an opt-in Telegram notifier remain available. Platform/workflow configuration is not a claim that those hosted jobs have already executed.
 
-Use the CLI:
+Tests use loopback and do not require Tailscale or production secrets. The notifier only runs after publication when `ENABLE_TELEGRAM=true`, using `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID_CHANNEL`; enabling it sends release files to that chat. Local `verify` and `dist` never publish or notify.
 
-```bash
-./zenith_client --url http://localhost:8080 ping
-```
+## Operating boundaries
 
----
+The registry is thread-safe and full-status JSON is cached between mutations. Snapshots are independent and network writes do not hold the registry lock. Names are case-sensitive, trimmed and limited to 256 UTF-8 bytes; JSON requests are limited to 4 KiB. The CLI caps responses at 8 MiB, does not follow redirects, and keeps HTTPS certificate verification enabled.
 
-# CLI Commands
+Ctrl+C cancels the CLI or starts server draining on all supported OSes. Windows Ctrl+Break and POSIX SIGTERM are also handled; force-killing a process is not graceful shutdown. The server allows up to 10 seconds to drain active requests. See platform-specific OS termination limits in the platform guide.
 
-```
-add         Add a service
-check       Continuously check service availability
-ping        Ping the server
-remove      Remove a service
-status      Query service status
-```
+There is no persistence, replication, automatic TTL/heartbeat expiry, authentication, built-in TLS, pagination or registration quota. A crash does not remove a registration; a Zenith restart removes all of them. Do not expose this server directly to untrusted clients. Windows service/launchd/systemd installation is not implemented.
 
-Global flag:
+## License
 
-```
---url
-```
-
-Default:
-
-```
-http://0.0.0.0:8080
-```
-
-Examples:
-
-```bash
-# Ping server
-zenith_client ping
-
-# Register a service
-zenith_client add api
-
-# Check a service
-zenith_client check api
-
-# Check every registered service
-zenith_client check
-
-# Service status
-zenith_client status api
-
-# Remove a service
-zenith_client remove api
-```
-
----
-
-# REST API
-
-| Method | Endpoint  | Description               |
-| ------ | --------- | ------------------------- |
-| GET    | `/ping`   | Health endpoint           |
-| POST   | `/add`    | Register a service        |
-| DELETE* | `/remove` | Remove a service          |
-| GET    | `/status` | Query service status      |
-
-Example:
-
-```bash
-curl -X POST http://localhost:8080/add \
-    -H "Content-Type: application/json" \
-    -d '{"service_name":"example"}'
-```
-
----
-
-# End-to-End Testing
-
-Zenith includes an end-to-end GitHub Actions workflow that validates the complete distributed system.
-
-The workflow performs the following steps:
-
-1. Build the server binary.
-2. Build the CLI binary.
-3. Upload both artifacts.
-4. Start the server on a dedicated GitHub Actions runner.
-5. Connect all runners using Tailscale.
-6. Register the main server service.
-7. Wait until the server becomes reachable.
-8. Launch two independent client runners.
-9. Register services from each client.
-10. Continuously verify service availability.
-11. Remove services one by one.
-12. Finally remove the server service and complete the shutdown sequence.
-
-This simulates a small distributed environment where multiple machines communicate with a central Zenith server over a private Tailscale network.
-
----
-
-# Example Workflow
-
-```
-Server
-   │
-   ├── Register "main_service"
-   │
-   ├──────────────┐
-   │              │
-Client-01      Client-02
-   │              │
-Register      Register
-   │              │
-Check          Check
-   │              │
-Remove         Remove
-   └──────┬───────┘
-          │
-      Remove server
-```
-
----
-
-# Technologies
-
-* Go
-* Cobra CLI
-* net/http
-* GitHub Actions
-* Tailscale
-
----
-
-# License
-
-MIT License.
+The original README identified MIT, but the supplied archive contained an empty `client/LICENSE` and no complete root license. The maintainer must confirm and supply the intended license/copyright text before relying on that designation for redistribution. This update does not invent those details.

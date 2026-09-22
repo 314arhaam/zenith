@@ -1,142 +1,141 @@
 name: CI
-
 on:
   workflow_dispatch:
+  workflow_call:
   push:
-    branches:
-      - main
-    
-    paths-ignore:
-      - "README.md"
-      - "**/*.md"
-      - "**/*.png"
-
+    branches: [main]
   pull_request:
-    
-    paths-ignore:
-      - "README.md"
-      - "**/*.md"
-      - "**/*.png"
-
+permissions:
+  contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 jobs:
-
-  core_tests:
-    runs-on: ubuntu-22.04
+  native-tests:
+    name: Native ${{ matrix.goos }}/${{ matrix.goarch }} tests
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            goos: linux
+            goarch: amd64
+            python_arch: x64
+            ext: ''
+            race_flag: '--race'
+          - runner: ubuntu-24.04-arm
+            goos: linux
+            goarch: arm64
+            python_arch: arm64
+            ext: ''
+            race_flag: '--race'
+          - runner: windows-2025
+            goos: windows
+            goarch: amd64
+            python_arch: x64
+            ext: '.exe'
+            race_flag: '--race'
+          - runner: windows-11-arm
+            goos: windows
+            goarch: arm64
+            python_arch: arm64
+            ext: '.exe'
+            race_flag: ''
+          - runner: macos-15-intel
+            goos: darwin
+            goarch: amd64
+            python_arch: x64
+            ext: ''
+            race_flag: '--race'
+          - runner: macos-15
+            goos: darwin
+            goarch: arm64
+            python_arch: arm64
+            ext: ''
+            race_flag: '--race'
     steps:
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          go-version: '1.26'
-      
-      - name: Go mod tidy
-        run: go mod tidy
-      
-      - name: Unit tests
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: .go-version
+          architecture: ${{ matrix.python_arch }}
+          cache: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+          architecture: ${{ matrix.python_arch }}
+      - name: Confirm native toolchain and race prerequisites
+        run: python scripts/dev.py doctor --expect-target ${{ matrix.goos }}/${{ matrix.goarch }} ${{ matrix.race_flag }}
+      - name: Windows wrapper smoke test
+        if: runner.os == 'Windows'
+        run: .\scripts\dev.ps1 doctor --expect-target ${{ matrix.goos }}/${{ matrix.goarch }}
+      - name: POSIX wrapper smoke test
+        if: runner.os != 'Windows'
+        run: sh scripts/dev.sh doctor --expect-target ${{ matrix.goos }}/${{ matrix.goarch }}
+      - name: Module integrity and tidy check
+        run: python scripts/dev.py modules
+      - name: Check Go formatting
+        run: python scripts/dev.py fmt --check
+      - name: Vet
+        run: python scripts/dev.py vet
+      - name: Portable developer-tool unit tests
+        run: python scripts/dev.py py-test
+      - name: Go unit and integration tests with coverage
+        # Windows arm64 has no Go race detector; ordinary tests still run in full.
+        run: python scripts/dev.py test ${{ matrix.race_flag }}
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tests-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            artifacts/tests/
+            artifacts/python-tests.txt
+          if-no-files-found: warn
+          retention-days: 14
+  previous-go:
+    name: Previous supported Go line
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.x'
+          check-latest: true
+          cache: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version-file: .python-version
+      - run: python scripts/dev.py test --race
+      - if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tests-previous-go
+          path: artifacts/tests/
+          retention-days: 14
+  lint-and-fuzz:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: .go-version
+          cache: true
+      - name: Validate GitHub Actions workflows
         shell: bash
         run: |
-          go test ./tests/core_*_test.go -v
-
-  server_tests:
-    needs: [core_tests]
-    runs-on: ubuntu-22.04
-    steps:
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-
-      - name: Go mod tidy
-        run: go mod tidy
-
-      - name: Unit tests
-        shell: bash
-        run: | 
-          go test ./tests/server_*.go ./tests/*_utils.go -v
-      
-      - name: Integration tests
-        shell: bash
-        run: |
-          go test ./tests/integration/server_*.go ./tests/integration/*_utils.go -v
-
-  client_tests:
-    needs: [server_tests]
-    runs-on: ubuntu-22.04
-    steps:
-
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.26'
-    
-      - name: Go mod tidy
-        run: go mod tidy
-
-      - name: Combined tests
-        shell: bash
-        run: | 
-          go test ./tests/client_*.go ./tests/*_utils.go -v
-
-  server_build:
-    needs: [server_tests]
-    runs-on: ubuntu-22.04
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.26'
-
-    - name: Go mod tidy
-      run: go mod tidy
-    
-    - name: Build go binaries
-      shell: bash
-      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_server server/main.go
-    
-    - name: Upload zenith_server binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: zenith_server
-        path: zenith_server
-        retention-days: 1
-
-  client_build:
-    needs: [client_tests]
-    runs-on: ubuntu-22.04
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.26'
-
-    - name: Go mod tidy
-      run: go mod tidy
-    
-    - name: Build go binaries
-      shell: bash
-      run: GOOS='linux' GOARCH='amd64' CGO_ENABLED=0 go build -o zenith_client client/main.go
-    
-    - name: Upload zenith_client binary
-      uses: actions/upload-artifact@v4
-      with:
-        name: zenith_client
-        path: zenith_client
-        retention-days: 1
+          set -euo pipefail
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          actionlint
+      - name: Bounded parser fuzz test
+        run: go test ./models -run '^$' -fuzz '^FuzzDecodeRequest$' -fuzztime=10s -parallel=2
